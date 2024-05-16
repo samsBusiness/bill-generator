@@ -7,7 +7,14 @@
     // "plugin:jsx-a11y/recommended",
     "plugin:prettier/recommended"
   ],
-  "plugins": ["react", "jsx-a11y", "simple-import-sort", "sonarjs", "security", "unicorn"],
+  "plugins": [
+    "react",
+    "jsx-a11y",
+    "simple-import-sort",
+    "sonarjs",
+    "security",
+    "unicorn"
+  ],
   "rules": {
     "react/react-in-jsx-scope": "off",
     "jsx-a11y/anchor-is-valid": "off",
@@ -30,6 +37,7 @@
       "rules": {
         "react/prop-types": "off",
         "@typescript-eslint/no-unused-vars": "error",
+        "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/explicit-function-return-type": [
           "off",
           {
