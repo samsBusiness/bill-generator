@@ -502,7 +502,7 @@ const BillForm = () => {
                   type="text"
                 />
               </div>
-              <div className="mx-3">
+              <div className="my-1 sm:my-0 sm:mx-3">
                 <label
                   className="block font-medium mb-1"
                   htmlFor={`hsn-${prod.sr}`}
@@ -517,7 +517,7 @@ const BillForm = () => {
                   type="text"
                 />
               </div>
-              <div className="mx-3">
+              <div className="my-1 sm:my-0 sm:mx-3">
                 <label
                   className="block font-medium mb-1"
                   htmlFor={`qty-${prod.sr}`}
@@ -525,7 +525,7 @@ const BillForm = () => {
                   QTY
                 </label>
                 <Input
-                  className="text-right mx-1"
+                  className="text-right my-1 sm:my-0 sm:mx-1"
                   size={24}
                   onChange={(element) => {
                     prod.QTY = +element.target.value;
@@ -537,7 +537,7 @@ const BillForm = () => {
                   type="number"
                 />
               </div>
-              <div className="mx-1">
+              <div className="my-1 sm:my-0 sm:mx-1">
                 <label
                   className="block font-medium mb-1"
                   htmlFor={`type-${prod.sr}`}
@@ -557,7 +557,7 @@ const BillForm = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="mx-1">
+              <div className="my-1 sm:my-0 sm:mx-1">
                 <label
                   className="block font-medium mb-1"
                   htmlFor={`rate-${prod.sr}`}
@@ -576,7 +576,7 @@ const BillForm = () => {
                   type="number"
                 />
               </div>
-              <div className="mx-1">
+              <div className="my-1 sm:my-0 sm:mx-1">
                 <label
                   className="block font-medium mb-1"
                   htmlFor={`amnt-${prod.sr}`}
@@ -593,7 +593,7 @@ const BillForm = () => {
                   readOnly
                 />
               </div>
-              <div className="mx-1">
+              <div className="my-1 sm:my-0 sm:mx-1">
                 <label
                   className="block font-medium mb-1"
                   htmlFor={`amntf-${prod.sr}`}
