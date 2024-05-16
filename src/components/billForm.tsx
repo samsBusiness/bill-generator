@@ -122,6 +122,9 @@ const BillForm = () => {
       add1: vendor?.Add1 || "",
       add2: vendor?.Add2 || "",
       add3: vendor?.Add3 || "",
+      SGST: vendor?.SGST ? 0 : undefined,
+      CGST: vendor?.CGST ? 0 : undefined,
+      IGST: vendor?.IGST ? 0 : undefined,
     });
   }, [vendor]);
 

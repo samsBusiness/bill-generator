@@ -182,7 +182,7 @@ const FormattedBill: React.FC<props> = ({form}) => {
               <tr>
                 <th colSpan={2}>SGST 9%</th>
                 <th colSpan={2} className="text-right px-2">
-                  {form.SGST || 0}
+                  {form.SGST || ""}
                 </th>
               </tr>
               {/*  */}
