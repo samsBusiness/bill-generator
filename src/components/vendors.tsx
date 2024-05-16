@@ -84,9 +84,12 @@ const VendorTable: React.FC = () => {
 
     try {
       const response = await axios.post("/api/vendors", newVendor);
-      const createdVendor: Vendor = response.data;
-      setRowData([...rowData, createdVendor]);
-      //   fetchVendors();
+      console.log(response.status);
+      if (response.status === 201) {
+        fetchVendors();
+      }
+      // const createdVendor: Vendor = response.data;
+      // setRowData([...rowData, createdVendor]);
     } catch (error) {
       console.error("Error creating vendor:", error);
     }
@@ -225,7 +228,7 @@ const VendorTable: React.FC = () => {
           defaultColDef={{
             resizable: true,
           }}
-          singleClickEdit={true}
+          // singleClickEdit={true}
           domLayout="autoHeight"
           enableRangeSelection={true}
           groupSelectsChildren={true}
