@@ -14,7 +14,7 @@ const navItems: NavItem[] = [
 ];
 
 const Dashboard = () => {
-  const [selectedNav, setSelectedNav] = useState<string>("/");
+  const [selectedNav, setSelectedNav] = useState<string>("/generate-bill");
   // const router = useRouter();
 
   const handleNavClick = (path: string) => {

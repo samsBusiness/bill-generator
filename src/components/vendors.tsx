@@ -3,9 +3,19 @@ import {AgGridReact} from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import {ColDef} from "ag-grid-community";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faBars, faPlus, faSave} from "@fortawesome/free-solid-svg-icons";
+
 import axios from "axios";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 interface Vendor {
+  _id?: string;
   PartyName: string;
   GSTNo: string;
   Add1: string;
@@ -70,7 +80,7 @@ const VendorTable: React.FC = () => {
     // });
   };
 
-  const handleSubmit = async (params: any) => {
+  const handleAdd = async (params: any) => {
     const newVendor: Vendor = {
       PartyName: params.data.PartyName,
       GSTNo: params.data.GSTNo,
@@ -95,6 +105,50 @@ const VendorTable: React.FC = () => {
     }
   };
 
+  const handleDelete = async (params: any) => {
+    try {
+      const response = await axios.delete(
+        "/api/vendors/" + rowData[params.rowIndex]._id
+      );
+      console.log(response.status);
+      if (response.status === 200) {
+        fetchVendors();
+      }
+      // const createdVendor: Vendor = response.data;
+      // setRowData([...rowData, createdVendor]);
+    } catch (error) {
+      console.error("Error Deleting vendor:", error);
+    }
+  };
+
+  const handleSave = async (params: any) => {
+    const updatedVendor: Vendor = {
+      PartyName: params.data.PartyName,
+      GSTNo: params.data.GSTNo,
+      Add1: params.data.Add1,
+      Add2: params.data.Add2,
+      Add3: params.data.Add3,
+      CGST: params.data.CGST,
+      SGST: params.data.SGST,
+      IGST: params.data.IGST,
+    };
+
+    try {
+      const response = await axios.put(
+        "/api/vendors/" + rowData[params.rowIndex]._id,
+        updatedVendor
+      );
+      console.log(response.status);
+      if (response.status === 200) {
+        fetchVendors();
+      }
+      // const createdVendor: Vendor = response.data;
+      // setRowData([...rowData, createdVendor]);
+    } catch (error) {
+      console.error("Error creating vendor:", error);
+    }
+  };
+
   //   const handleSubmit = (params: any) => {
   //     const rowIndex = params.rowIndex;
   //     const updatedData = rowData.map((row, index) => {
@@ -107,25 +161,45 @@ const VendorTable: React.FC = () => {
   //     });
   //     setRowData([...updatedData]);
   //   };
-  const [columnDefs] = useState<ColDef[]>([
+  const columnDefs: ColDef[] = [
     {
       headerName: "",
       field: "edit",
+      width: 50,
       cellRenderer: (params: any) => {
         return params.data.isEditable ? (
-          <button
-            className="bg-gray-300 p-2 w-1/2 ml-[25%] rounded-md text-sm text-center"
-            onClick={() => handleSubmit(params)}
-          >
-            Submit
-          </button>
+          params.data.isNew ? (
+            <button onClick={() => handleAdd(params)}>
+              <FontAwesomeIcon icon={faPlus} />
+            </button>
+          ) : (
+            <button onClick={() => handleSave(params)}>
+              <FontAwesomeIcon icon={faSave} />
+            </button>
+          )
         ) : (
-          <button
-            className="bg-gray-300 p-2 w-1/2 ml-[25%] rounded-md text-sm"
-            onClick={() => handleEdit(params)}
-          >
-            Edit
-          </button>
+          // <button
+          //   className="rounded-md text-sm"
+          //   onClick={() => handleEdit(params)}
+          // >
+          //   Edit
+          // </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <FontAwesomeIcon icon={faBars} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleEdit(params)}>
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-red"
+                onClick={() => handleDelete(params)}
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         );
       },
       editable: false,
@@ -197,7 +271,7 @@ const VendorTable: React.FC = () => {
       cellEditor: "agSelectCellEditor",
       cellEditorParams: {values: [true, false]},
     },
-  ]);
+  ];
 
   const addNewRow = () => {
     rowData.push({

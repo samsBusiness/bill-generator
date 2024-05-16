@@ -15,6 +15,8 @@ import {VendorDocument} from "@/models/vendor";
 import Dateformat from "dateformat";
 import FormattedBill from "./formattedBill";
 import {Combobox} from "./combobox";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faTrash} from "@fortawesome/free-solid-svg-icons";
 export interface Product {
   sr: number;
   part: string;
@@ -103,6 +105,7 @@ const BillForm = () => {
   const [PdatepopoverOpen, setPdatepopoverOpen] = useState(false);
 
   useEffect(() => {
+    console.log("USEFFECT first");
     axios.get("/api/vendors").then((response) => {
       // setVendors(
       //   response.data?.map((vendor: VendorDocument) => ({
@@ -115,6 +118,7 @@ const BillForm = () => {
   }, []);
 
   useEffect(() => {
+    console.log("USEFFECT VENDOR", vendor);
     setForm({
       ...form,
       pname: vendor?.PartyName || "",
@@ -133,6 +137,9 @@ const BillForm = () => {
     setPreview(true);
   };
 
+  const roundto2decimal = (num: number) =>
+    Math.round((num + Number.EPSILON) * 100) / 100;
+
   const calculateAllFields = () => {
     console.log("CHANGED");
     prods.forEach((prod) => {
@@ -142,12 +149,22 @@ const BillForm = () => {
     setProds([...prods]);
     const invNo: string = form.no ? getFinYear() + "/" + form.no : "";
     const total: number = prods.reduce((acc, prod) => acc + prod.amt, 0);
-    const discamt: number = ((form.discount || 0) * total) / 100;
-    const lessdisc: number = total - discamt + (form.pnf || 0);
-    const CGST = vendor?.CGST ? (lessdisc * 9) / 100 : undefined;
-    const SGST = vendor?.SGST ? (lessdisc * 9) / 100 : undefined;
-    const IGST = vendor?.IGST ? (lessdisc * 18) / 100 : undefined;
-    const Gtotal: number = lessdisc + (CGST || 0) + (SGST || 0) + (IGST || 0);
+    const discamt: number = roundto2decimal(
+      ((form.discount || 0) * total) / 100
+    );
+    const lessdisc: number = roundto2decimal(total - discamt + (form.pnf || 0));
+    const CGST = vendor?.CGST
+      ? roundto2decimal((lessdisc * 9) / 100)
+      : undefined;
+    const SGST = vendor?.SGST
+      ? roundto2decimal((lessdisc * 9) / 100)
+      : undefined;
+    const IGST = vendor?.IGST
+      ? roundto2decimal((lessdisc * 18) / 100)
+      : undefined;
+    const Gtotal: number = Math.floor(
+      lessdisc + (CGST || 0) + (SGST || 0) + (IGST || 0) + 0.5
+    );
     const calculatedFields: Partial<BForm> = {
       total,
       discamt,
@@ -155,7 +172,7 @@ const BillForm = () => {
       CGST,
       SGST,
       IGST,
-      Gtotal: Math.round((Gtotal + Number.EPSILON) * 100) / 100,
+      Gtotal,
       invNo,
     };
     setForm({...form, ...calculatedFields});
@@ -199,9 +216,10 @@ const BillForm = () => {
                 label: `${v.PartyName} (${v.GSTNo})`,
                 value: JSON.stringify(v),
               }))}
-              onChange={(value: any) =>
-                setVendor(value ? JSON.parse(value) : "")
-              }
+              initValue={JSON.stringify(vendor)}
+              onChange={(value: any) => {
+                if (value) setVendor(JSON.parse(value));
+              }}
               placeholderText={"Select Party"}
             />
           </div>
@@ -278,13 +296,16 @@ const BillForm = () => {
           <label className="block font-medium mb-1" htmlFor="type">
             Type
           </label>
-          <Select onValueChange={(value) => setForm({...form, type: value})}>
+          <Select
+            onValueChange={(value) => setForm({...form, type: value})}
+            value={form.type}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Invoice">Invoice</SelectItem>
-              <SelectItem value="Challan">Challan</SelectItem>
+              <SelectItem value="Proforma">Proforma</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -304,20 +325,6 @@ const BillForm = () => {
                 }}
                 placeholder="Enter Number"
                 type="number"
-              />
-            </div>
-            <div>
-              <label className="block font-medium mb-1" htmlFor="gst">
-                Invoice No
-              </label>
-              <Input
-                id="invno"
-                value={form.invNo}
-                onChange={(event) =>
-                  setForm({...form, invNo: event.target.value})
-                }
-                placeholder="Enter Invoice Number"
-                type="text"
               />
             </div>
             <div>
@@ -350,10 +357,24 @@ const BillForm = () => {
                 </PopoverContent>
               </Popover>
             </div>
+            <div>
+              <label className="block font-medium mb-1" htmlFor="gst">
+                Invoice No
+              </label>
+              <Input
+                id="invno"
+                value={form.invNo}
+                onChange={(event) =>
+                  setForm({...form, invNo: event.target.value})
+                }
+                placeholder="Enter Invoice Number"
+                type="text"
+              />
+            </div>
           </>
         )}
         {/* CHALAN *************************************************************/}
-        {form.type === "Challan" && (
+        {form.type === "Proforma" && (
           <>
             <div>
               <label className="block font-medium mb-1" htmlFor="no">
@@ -471,9 +492,22 @@ const BillForm = () => {
             key={"prod" + idx}
             className="border-[1px] border-gray-400 border-dashed p-4"
           >
-            <div className="w-full flex justify-between items-center">
+            <div className="w-full flex  items-center">
               <h1>PRODUCT {idx + 1}</h1>
-              <Button
+              <FontAwesomeIcon
+                icon={faTrash}
+                className={
+                  prods.length <= 1
+                    ? "text-red-200 ml-4"
+                    : "cursor-pointer text-red-500 hover:text-red-700 ml-4"
+                }
+                onClick={
+                  prods.length <= 1
+                    ? undefined
+                    : () => setProds(prods.filter((prod) => prod.sr != idx + 1))
+                }
+              />
+              {/* <Button
                 className=" text-sm  bg-red-500"
                 disabled={prods.length <= 1}
                 onClick={() =>
@@ -481,7 +515,7 @@ const BillForm = () => {
                 }
               >
                 Delete
-              </Button>
+              </Button> */}
             </div>
             <div
               key={"prod-" + idx}

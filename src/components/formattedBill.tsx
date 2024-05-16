@@ -19,6 +19,7 @@ const FormattedBill: React.FC<props> = ({form}) => {
     })
   );
   useEffect(() => {
+    console.log("HERE");
     form.prods.forEach((prod: Product, idx) => {
       products[idx] = {...prod};
     });
