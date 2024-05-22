@@ -33,16 +33,14 @@ const FormattedBill: React.FC<props> = ({form}) => {
         style={{
           fontFamily: "'calibri',sans-serif",
           margin: "0 auto",
-          height: "297mm",
+          // height: "297mm",
           width: "210mm",
         }}
+        id="billdoc"
       >
-        <div
-          className=" border-black border-[2px] w-full  text-center flex flex-col items-center p-4"
-          id="doc"
-        >
+        <div className=" border-black border-[2px] w-full  text-center flex flex-col items-center p-4">
           <p className="text-[20px] font-bold"> Tax Invoice</p>
-          <p className="text-[44px] font-bold">S. KasamAli Bros.</p>
+          <p className="text-[44px] font-bold pb-3">S. KasamAli Bros.</p>
           <p className="text-[11px] font-bold">
             Specialist in : Taps & Dies. Dealers in : HSS & Carbide Drills, Hob
             Cutters, HSS Punches & General Hardware
@@ -53,10 +51,12 @@ const FormattedBill: React.FC<props> = ({form}) => {
           </p>
         </div>
         <div className=" w-full mt-2">
-          <table className="fullborder border-collapse border-[1px] border-black w-full font-bold text-[12px] tracking-wide table-fixed">
+          <table className="fullborder border-collapse  w-full font-bold text-[12px] tracking-wide table-fixed">
             <tbody>
               <tr>
-                <th className="tracking-wider">M/s</th>
+                <th className="tracking-wider border-l-[1px] border-black">
+                  M/s
+                </th>
                 <th colSpan={4} className="text-left px-2">
                   {form.pname}
                 </th>
@@ -66,7 +66,9 @@ const FormattedBill: React.FC<props> = ({form}) => {
                 <th>{form.IDate ? Dateformat(form.IDate, "dd-mm-yy") : ""}</th>
               </tr>
               <tr>
-                <th rowSpan={2}>ADDRESS</th>
+                <th rowSpan={2} className="border-l-[1px] border-black">
+                  ADDRESS
+                </th>
                 <th rowSpan={2} colSpan={4} className="text-left px-2">
                   <p>{form.add1}</p>
                   <p>{form.add2}</p>
@@ -78,17 +80,17 @@ const FormattedBill: React.FC<props> = ({form}) => {
                 <th>{form.CDate ? Dateformat(form.CDate, "dd-mm-yy") : ""}</th>
               </tr>
               <tr>
-                <th className="py-2">P.O. NO.</th>
+                <th className="">P.O. NO.</th>
                 <th>{form.PONo}</th>
                 <th>Date</th>
                 <th>{form.Pdate ? Dateformat(form.Pdate, "dd-mm-yy") : ""}</th>
               </tr>
               <tr>
-                <th>GSTN:</th>
+                <th className="border-l-[1px] border-black">GSTN:</th>
                 <th colSpan={4} className="text-left px-2">
                   {form.GSTN}
                 </th>
-                <th className="py-2">EWAY</th>
+                <th className="">EWAY</th>
                 <th colSpan={3}>{form.Eway}</th>
               </tr>
             </tbody>
@@ -97,7 +99,7 @@ const FormattedBill: React.FC<props> = ({form}) => {
           {/* **************************************************************************************************************************************************** */}
           <table className="first-border mt-2 border-collapse border-[1px] border-black w-full text-[12px] tracking-wide table-fixed">
             <tbody>
-              <tr className="border-[1px] border-black">
+              <tr className="border-b-[1px] border-black">
                 <th className="text-[10px]">Sr No</th>
                 <th className="text-[14px]" colSpan={3}>
                   Particulars
@@ -153,10 +155,14 @@ const FormattedBill: React.FC<props> = ({form}) => {
             </tbody>
           </table>
           {/* ******************************************************************************************************** */}
-          <table className="fullborder mt-2 border-collapse border-[1px] border-black w-full text-[12px] tracking-wide table-fixed">
+          <table className="fullborder mt-2 border-collapse w-full text-[12px] tracking-wide table-fixed">
             <tbody>
               <tr>
-                <th colSpan={5} rowSpan={2}>
+                <th
+                  className="border-l-[1px] border-black"
+                  colSpan={5}
+                  rowSpan={2}
+                >
                   GSTIN.No. 27ALKPM0702G1ZD
                 </th>
                 <th colSpan={2}>Packing & Forwarding</th>
@@ -172,8 +178,12 @@ const FormattedBill: React.FC<props> = ({form}) => {
               </tr>
               {/*  */}
               <tr>
-                <td colSpan={5} rowSpan={2} className="px-2">
-                  {price_in_words(form.Gtotal)}
+                <td
+                  colSpan={5}
+                  rowSpan={2}
+                  className="px-2 border-l-[1px] border-black"
+                >
+                  Rupees in Words: Rupees {form.GtotalText}
                 </td>
                 <th colSpan={2}>CGST 9%</th>
                 <th colSpan={2} className="text-right px-2">
@@ -191,7 +201,7 @@ const FormattedBill: React.FC<props> = ({form}) => {
                 <th
                   colSpan={5}
                   rowSpan={2}
-                  className="px-2 text-left tracking-normal text-[10px]"
+                  className="px-2 text-left tracking-normal text-[10px] border-l-[1px] border-black"
                 >
                   <p>Bank Details : S KASAMALI BROS</p>
                   <p>Bank : HDFC BANK</p>
@@ -205,15 +215,20 @@ const FormattedBill: React.FC<props> = ({form}) => {
                 </th>
               </tr>
               <tr>
-                <th colSpan={2} className="underline py-4">
-                  GRAND TOTAL
+                <th colSpan={2}>
+                  <div className="border-b-[1px] border-black w-fit mx-auto pb-1">
+                    GRAND TOTAL
+                  </div>
                 </th>
                 <th colSpan={2} className="text-right px-2">
                   {form.Gtotal}
                 </th>
               </tr>
               <tr>
-                <td colSpan={5} className="text-left px-2">
+                <td
+                  colSpan={5}
+                  className="text-left px-2 border-l-[1px] border-black"
+                >
                   <p>SUBJECT TO MUMBAI JURISDICTION</p>
                   <p>
                     • No claim will be entertained after 24 hours of delivery.

@@ -1,10 +1,11 @@
 import React, {useEffect, useRef, useState} from "react";
 import {AgGridReact} from "ag-grid-react";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
-import {ColDef} from "ag-grid-community";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBars, faPlus, faSave} from "@fortawesome/free-solid-svg-icons";
+import "ag-grid-enterprise";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+import {ColDef, NewValueParams} from "ag-grid-community";
 
 import axios from "axios";
 import {
@@ -21,9 +22,9 @@ interface Vendor {
   Add1: string;
   Add2: string;
   Add3: string;
-  CGST: boolean;
-  SGST: boolean;
-  IGST: boolean;
+  CGST: boolean | string;
+  SGST: boolean | string;
+  IGST: boolean | string;
   isNew?: boolean;
   isEditable?: boolean;
 }
@@ -42,7 +43,13 @@ const VendorTable: React.FC = () => {
   const fetchVendors = async () => {
     try {
       const response = await axios.get("/api/vendors");
-      setRowData(response.data);
+      const vendors = response.data.map((vendor: any) => ({
+        ...vendor,
+        SGST: vendor.SGST ? "y" : "n",
+        CGST: vendor.CGST ? "y" : "n",
+        IGST: vendor.IGST ? "y" : "n",
+      }));
+      setRowData(vendors);
     } catch (error) {
       console.error("Error fetching vendors:", error);
     }
@@ -79,6 +86,10 @@ const VendorTable: React.FC = () => {
     //   }
     // });
   };
+
+  // const handleExport = (params:) => {
+
+  // }
 
   const handleAdd = async (params: any) => {
     const newVendor: Vendor = {
@@ -128,9 +139,9 @@ const VendorTable: React.FC = () => {
       Add1: params.data.Add1,
       Add2: params.data.Add2,
       Add3: params.data.Add3,
-      CGST: params.data.CGST,
-      SGST: params.data.SGST,
-      IGST: params.data.IGST,
+      CGST: params.data.CGST == "y",
+      SGST: params.data.SGST == "y",
+      IGST: params.data.IGST == "y",
     };
 
     try {
@@ -149,18 +160,41 @@ const VendorTable: React.FC = () => {
     }
   };
 
-  //   const handleSubmit = (params: any) => {
-  //     const rowIndex = params.rowIndex;
-  //     const updatedData = rowData.map((row, index) => {
-  //       if (index === rowIndex) {
-  //         row.isNew = false;
-  //         row.isEditable = false;
-  //         console.log("Submitted Row Data:", row);
-  //       }
-  //       return row;
-  //     });
-  //     setRowData([...updatedData]);
-  //   };
+  const handleBulkSave = async (vendors: any[]) => {
+    const gstNos = rowData.map((v: Vendor) => v.GSTNo);
+    const vendorsTobeAdded = vendors
+      .map((v) => {
+        const vendor: Vendor = {
+          PartyName: v[0],
+          GSTNo: v[1],
+          Add1: v[2],
+          Add2: v[3],
+          Add3: v[4],
+          CGST: v[5] == "y" || v[5] == "Y",
+          SGST: v[6] == "y" || v[6] == "Y",
+          IGST: v[7] == "y" || v[7] == "Y",
+        };
+        return vendor;
+      })
+      .filter((v) => !!v.GSTNo && !gstNos.includes(v.GSTNo));
+    try {
+      const response = await axios.post("/api/vendors", vendorsTobeAdded, {
+        headers: {
+          "Content-Type": "application/json",
+          "x-bulk-operation": "true",
+        },
+      });
+      console.log(response.status);
+      if (response.status === 200) {
+        fetchVendors();
+      }
+      // const createdVendor: Vendor = response.data;
+      // setRowData([...rowData, createdVendor]);
+    } catch (error) {
+      console.error("Error creating vendor:", error);
+    }
+  };
+
   const columnDefs: ColDef[] = [
     {
       headerName: "",
@@ -188,7 +222,7 @@ const VendorTable: React.FC = () => {
             <DropdownMenuTrigger>
               <FontAwesomeIcon icon={faBars} />
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent align="start">
               <DropdownMenuItem onClick={() => handleEdit(params)}>
                 Edit
               </DropdownMenuItem>
@@ -242,47 +276,72 @@ const VendorTable: React.FC = () => {
       sortable: true,
     },
     {
-      headerName: "CGST",
-      field: "CGST",
-      editable: isCellEditable,
-      filter: true,
-      sortable: true,
-      cellRenderer: (params: any) => (params.value ? "Y" : "N"),
-      cellEditor: "agSelectCellEditor",
-      cellEditorParams: {values: [true, false]},
-    },
-    {
       headerName: "SGST",
       field: "SGST",
       editable: isCellEditable,
       filter: true,
       sortable: true,
-      cellRenderer: (params: any) => (params.value ? "Y" : "N"),
+      onCellValueChanged: (params: NewValueParams) => {
+        if (params.node?.rowIndex != null) {
+          rowData[params.node?.rowIndex]["CGST"] = params.newValue;
+          rowData[params.node?.rowIndex]["IGST"] =
+            params.newValue == "y" ? "n" : "y";
+          setRowData([...rowData]);
+        }
+      },
+      // cellRenderer: (params: any) => (params.value ? "y" : "n"),
       cellEditor: "agSelectCellEditor",
-      cellEditorParams: {values: [true, false]},
+      cellEditorParams: {values: ["y", "n"]},
     },
+    {
+      headerName: "CGST",
+      field: "CGST",
+      editable: isCellEditable,
+      filter: true,
+      sortable: true,
+      onCellValueChanged: (params: NewValueParams) => {
+        if (params.node?.rowIndex != null) {
+          rowData[params.node?.rowIndex]["SGST"] = params.newValue;
+          rowData[params.node?.rowIndex]["IGST"] =
+            params.newValue == "y" ? "n" : "y";
+          setRowData([...rowData]);
+        }
+      },
+      // cellRenderer: (params: any) => (params.value ? "y" : "n"),
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: {values: ["y", "n"]},
+    },
+
     {
       headerName: "IGST",
       field: "IGST",
       editable: isCellEditable,
       filter: true,
       sortable: true,
-      cellRenderer: (params: any) => (params.value ? "Y" : "N"),
+      // cellRenderer: (params: any) => (params.value== ? "y" : "n"),
+      onCellValueChanged: (params: NewValueParams) => {
+        if (params.node?.rowIndex != null) {
+          rowData[params.node?.rowIndex]["CGST"] = rowData[
+            params.node?.rowIndex
+          ]["SGST"] = params.newValue == "y" ? "n" : "y";
+          setRowData([...rowData]);
+        }
+      },
       cellEditor: "agSelectCellEditor",
-      cellEditorParams: {values: [true, false]},
+      cellEditorParams: {values: ["y", "n"]},
     },
   ];
 
   const addNewRow = () => {
-    rowData.push({
+    rowData.unshift({
       PartyName: "",
       GSTNo: "",
       Add1: "",
       Add2: "",
       Add3: "",
-      CGST: false,
-      SGST: false,
-      IGST: false,
+      CGST: "y",
+      SGST: "y",
+      IGST: "n",
       isNew: true,
       isEditable: true,
     });
@@ -291,9 +350,19 @@ const VendorTable: React.FC = () => {
 
   return (
     <div style={{width: "100%", height: "100%"}}>
-      <button onClick={addNewRow} style={{marginBottom: "10px"}}>
+      <div className="flex justify-between">
+        <h1 className="text-4xl text-center">Vendors</h1>
+        <button
+          className="px-4 py-2 text-gray-500 text-xl border-[1px] border-slate-200 hover:bg-slate-600 hover:text-white rounded-md mb-2"
+          onClick={addNewRow}
+        >
+          + Add Vendor
+        </button>
+      </div>
+      <hr className="w-full mb-8 " />
+      {/* <button onClick={addNewRow} style={{marginBottom: "10px"}}>
         Add New Row
-      </button>
+      </button> */}
       <div className="ag-theme-alpine ag-grid-react always-show-horizontal-scroll">
         <AgGridReact
           ref={gridRef}
@@ -301,6 +370,8 @@ const VendorTable: React.FC = () => {
           columnDefs={columnDefs}
           defaultColDef={{
             resizable: true,
+            suppressMenu: true,
+            filter: true,
           }}
           // singleClickEdit={true}
           domLayout="autoHeight"
@@ -314,14 +385,19 @@ const VendorTable: React.FC = () => {
           }}
           suppressClipboardPaste={false}
           processDataFromClipboard={(params) => {
-            console.log(params);
-            return null;
+            const vendorsTobeAdded = params.data;
+            console.log(vendorsTobeAdded);
+            handleBulkSave(vendorsTobeAdded);
+            return vendorsTobeAdded;
           }}
           suppressLastEmptyLineOnPaste={true}
           copyHeadersToClipboard={false}
           rowSelection="multiple"
           alwaysShowHorizontalScroll={true}
           gridOptions={{alwaysShowHorizontalScroll: true}}
+          pagination={true}
+          paginationPageSize={20}
+          columnMenu="new"
         />
       </div>
     </div>

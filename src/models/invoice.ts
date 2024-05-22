@@ -1,13 +1,164 @@
 import mongoose from "mongoose";
+import {CounterModel} from "./counter";
+export interface InvoiceDocument extends Document {
+  _id: object;
+  // sr: number;
+  pname: string;
+  GSTN: string;
+  add1?: string;
+  add2?: string;
+  add3?: string;
+  type?: string;
+  no?: string;
+  invNo?: string;
+  IDate?: Date;
+  d?: number;
+  m?: number;
+  y?: number;
+  ChNo?: string;
+  CDate?: Date;
+  PONo?: string;
+  Pdate?: Date;
+  Eway?: string;
+
+  sr1?: number;
+  part1?: string;
+  HSN1?: number;
+  QTY1?: number;
+  typ1?: string;
+  rate1?: number;
+  amt1?: number;
+  amtF1?: string;
+
+  sr2?: number;
+  part2?: string;
+  HSN2?: number;
+  QTY2?: number;
+  typ2?: string;
+  rate2?: number;
+  amt2?: number;
+  amtF2?: string;
+
+  sr3?: number;
+  part3?: string;
+  HSN3?: number;
+  QTY3?: number;
+  typ3?: string;
+  rate3?: number;
+  amt3?: number;
+  amtF3?: string;
+
+  sr4?: number;
+  part4?: string;
+  HSN4?: number;
+  QTY4?: number;
+  typ4?: string;
+  rate4?: number;
+  amt4?: number;
+  amtF4?: string;
+
+  sr5?: number;
+  part5?: string;
+  HSN5?: number;
+  QTY5?: number;
+  typ5?: string;
+  rate5?: number;
+  amt5?: number;
+  amtF5?: string;
+
+  sr6?: number;
+  part6?: string;
+  HSN6?: number;
+  QTY6?: number;
+  typ6?: string;
+  rate6?: number;
+  amt6?: number;
+  amtF6?: string;
+
+  sr7?: number;
+  part7?: string;
+  HSN7?: number;
+  QTY7?: number;
+  typ7?: string;
+  rate7?: number;
+  amt7?: number;
+  amtF7?: string;
+
+  sr8?: number;
+  part8?: string;
+  HSN8?: number;
+  QTY8?: number;
+  typ8?: string;
+  rate8?: number;
+  amt8?: number;
+  amtF8?: string;
+
+  sr9?: number;
+  part9?: string;
+  HSN9?: number;
+  QTY9?: number;
+  typ9?: string;
+  rate9?: number;
+  amt9?: number;
+  amtF9?: string;
+
+  sr10?: number;
+  part10?: string;
+  HSN10?: number;
+  QTY10?: number;
+  typ10?: string;
+  rate10?: number;
+  amt10?: number;
+  amtF10?: string;
+
+  sr11?: number;
+  part11?: string;
+  HSN11?: number;
+  QTY11?: number;
+  typ11?: string;
+  rate11?: number;
+  amt11?: number;
+  amtF11?: string;
+
+  sr12?: number;
+  part12?: string;
+  HSN12?: number;
+  QTY12?: number;
+  typ12?: string;
+  rate12?: number;
+  amt12?: number;
+  amtF12?: string;
+
+  sr13?: number;
+  part13?: string;
+  HSN13?: number;
+  QTY13?: number;
+  typ13?: string;
+  rate13?: number;
+  amt13?: number;
+  amtF13?: string;
+
+  discount?: number;
+  discamt: number;
+  pnf?: number;
+  total?: number;
+  lessdisc?: number;
+  CGST?: number;
+  SGST?: number;
+  IGST?: number;
+  Gtotal: number;
+  GtotalText: string;
+}
 
 const invoiceSchema = new mongoose.Schema({
+  _id: {type: Number},
   pname: {type: String, required: true},
   GSTN: {type: String, required: true},
   add1: {type: String},
   add2: {type: String},
   add3: {type: String},
   type: {type: String},
-  no: {type: String},
+  no: {type: Number, required: true, unique: true},
   invNo: {type: String},
   IDate: {type: Date},
   d: {type: Number},
@@ -136,8 +287,8 @@ const invoiceSchema = new mongoose.Schema({
   amt13: {type: Number},
   amtF13: {type: String},
 
-  discount: {type: Number, required: true, default: 0},
-  discamt: {type: Number, required: true, default: 0},
+  discount: {type: Number},
+  discamt: {type: Number, default: 0},
   pnf: {type: Number, required: true, default: 0},
   total: {type: Number, required: true, default: 0},
   lessdisc: {type: Number, required: true, default: 0},
@@ -145,6 +296,20 @@ const invoiceSchema = new mongoose.Schema({
   SGST: {type: Number, required: true, default: 0},
   IGST: {type: Number, required: true, default: 0},
   Gtotal: {type: Number, required: true, default: 0},
+  GtotalText: {type: String, required: true, default: "Rupees Zero only"},
 });
 
-module.exports = mongoose.model("Invoice", invoiceSchema);
+invoiceSchema.pre("save", async function (next) {
+  if (this.isNew) {
+    const counter = await CounterModel.findByIdAndUpdate(
+      {_id: "Invoice._id"},
+      {$inc: {seq: 1}},
+      {new: true, upsert: true}
+    );
+    this._id = counter.seq;
+  }
+  next();
+});
+
+export const Invoice =
+  mongoose.models.Invoice || mongoose.model("Invoice", invoiceSchema);

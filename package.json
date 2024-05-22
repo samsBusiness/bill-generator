@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prettier:format": "prettier \"**/*.{ts,tsx,js,css,json,scss}\" --write",
-    "prepare": "husky install"
+    "prettier:format": "prettier \"**/*.{ts,tsx,js,css,json,scss}\" --write"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
@@ -20,9 +19,10 @@
     "@radix-ui/react-popover": "^1.0.7",
     "@radix-ui/react-select": "^2.0.0",
     "@radix-ui/react-slot": "^1.0.2",
-    "ag-grid-community": "^31.3.1",
-    "ag-grid-react": "^31.3.1",
-    "axios": "^1.6.8",
+    "ag-grid-community": "^31.1.1",
+    "ag-grid-enterprise": "^31.1.1",
+    "ag-grid-react": "^31.1.1",
+    "axios": "^1.7.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
@@ -33,6 +33,8 @@
     "fs": "^0.0.1-security",
     "html-to-docx": "^1.8.0",
     "html-to-docx-typescript": "^1.3.2",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1",
     "lucide-react": "^0.378.0",
     "moment": "^2.30.1",
     "mongoose": "^8.3.4",

@@ -119,3 +119,41 @@ export function price_in_words(price: any) {
   } else str = "";
   return str.length > 1 ? str + "only." : str;
 }
+
+export function flattenObjectWithoutDelimiter(obj: any, result: any = {}) {
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      if (
+        typeof obj[key] === "object" &&
+        obj[key] !== null &&
+        !Array.isArray(obj[key])
+      ) {
+        flattenObjectWithoutDelimiter(obj[key], result);
+      } else {
+        result[key] = obj[key];
+      }
+    }
+  }
+  return result;
+}
+
+export const roundto2decimal = (num: number) =>
+  Math.round((num + Number.EPSILON) * 100) / 100;
+
+export const getFinYear = (date: Date = new Date()) => {
+  const currentDate = date;
+  const march1st = new Date();
+  march1st.setDate(1);
+  march1st.setMonth(2);
+  let currentYear;
+  if (currentDate >= march1st) {
+    currentYear = currentDate.getFullYear();
+  } else {
+    currentYear = currentDate.getFullYear() - 1;
+  }
+  return (
+    currentYear.toString().substring(2) +
+    "-" +
+    (currentYear + 1).toString().substring(2)
+  );
+};

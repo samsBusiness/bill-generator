@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import {Check, ChevronsUpDown} from "lucide-react";
 
 import {cn} from "@/lib/utils";
@@ -20,12 +20,21 @@ export const Combobox: React.FC<any> = ({
   className,
   initValue,
 }) => {
-  const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState(initValue);
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(initValue);
+  const [filteredItems, setFilteredItems] = useState(items);
 
   useEffect(() => {
     onChange(value);
   }, [value]);
+
+  const handleSearch = (query: string) => {
+    setFilteredItems(
+      items.filter((item: any) =>
+        item.label.toLowerCase().includes(query.toLowerCase())
+      )
+    );
+  };
   return (
     <div className={className}>
       <Popover open={open} onOpenChange={setOpen}>
@@ -46,14 +55,18 @@ export const Combobox: React.FC<any> = ({
         </PopoverTrigger>
         <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height]">
           <Command>
-            <CommandInput placeholder="Search Items..." />
+            <CommandInput
+              placeholder="Search Items..."
+              onValueChange={handleSearch}
+            />
             <CommandEmpty>No item found.</CommandEmpty>
             <CommandGroup>
               <CommandList>
-                {items.map((item: any) => (
+                {filteredItems.map((item: any) => (
                   <CommandItem
                     key={item.value}
                     value={item.value}
+                    defaultValue={initValue}
                     onSelect={(currentValue) => {
                       setValue(currentValue);
                       setOpen(false);

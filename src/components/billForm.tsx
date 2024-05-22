@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {use, useEffect, useState} from "react";
 import {
   SelectValue,
   SelectTrigger,
@@ -17,6 +17,16 @@ import FormattedBill from "./formattedBill";
 import {Combobox} from "./combobox";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faTrash} from "@fortawesome/free-solid-svg-icons";
+import {InvoiceDocument} from "@/models/invoice";
+import {
+  flattenObjectWithoutDelimiter,
+  getFinYear,
+  price_in_words,
+  roundto2decimal,
+} from "@/lib/utils";
+
+import html2canvas from "html2canvas";
+import {jsPDF} from "jspdf";
 export interface Product {
   sr: number;
   part: string;
@@ -53,6 +63,7 @@ export interface BForm {
   SGST?: number;
   IGST?: number;
   Gtotal: number;
+  GtotalText?: string;
 }
 
 const initialValues: BForm = {
@@ -62,24 +73,7 @@ const initialValues: BForm = {
   prods: [],
   total: 0,
   Gtotal: 0,
-};
-
-const getFinYear = () => {
-  const currentDate = new Date();
-  const march1st = new Date();
-  march1st.setDate(1);
-  march1st.setMonth(2);
-  let currentYear;
-  if (currentDate >= march1st) {
-    currentYear = currentDate.getFullYear();
-  } else {
-    currentYear = currentDate.getFullYear() - 1;
-  }
-  return (
-    currentYear.toString().substring(2) +
-    "-" +
-    (currentYear + 1).toString().substring(2)
-  );
+  GtotalText: "Zero only",
 };
 
 const newProd = (srno: number) => ({
@@ -93,29 +87,43 @@ const newProd = (srno: number) => ({
   amtF: "",
 });
 
-const BillForm = () => {
-  const [form, setForm] = useState<BForm>(initialValues);
+const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
+  const [form, setForm] = useState<BForm>(editForm?.form || initialValues);
   // const types = ["Invoice", "Challan"];
-  const [vendors, setVendors] = useState([]);
-  const [vendor, setVendor] = useState<VendorDocument>();
-  const [prods, setProds] = useState<Product[]>([newProd(1)]);
+  const [vendors, setVendors] = useState(editForm?.vendors || []);
+  const [vendor, setVendor] = useState<VendorDocument>(editForm?.vendor);
+  const [prods, setProds] = useState<Product[]>(editForm?.products || []);
   const [preview, setPreview] = useState(false);
   const [IdatepopoverOpen, setIdatepopoverOpen] = useState(false);
   const [CdatepopoverOpen, setCdatepopoverOpen] = useState(false);
   const [PdatepopoverOpen, setPdatepopoverOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    setLoading(true);
+    console.log("USEFFECT first");
+
+    axios
+      .get("/api/vendors")
+      .then((response) => {
+        setVendors(response.data);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
   useEffect(() => {
-    console.log("USEFFECT first");
-    axios.get("/api/vendors").then((response) => {
-      // setVendors(
-      //   response.data?.map((vendor: VendorDocument) => ({
-      //     label: `${vendor.PartyName} (${vendor.GSTNo})`,
-      //     value: vendor,
-      //   }))
-      // );
-      setVendors(response.data);
-    });
-  }, []);
+    setLoading(true);
+    console.log("EDIT FORM", editForm);
+    calculateAllFields();
+    setLoading(false);
+  }, [editForm]);
+
+  useEffect(() => {
+    if (vendors.length > 0) {
+      console.log("VENDORS ARE SETs", vendors);
+    }
+  }, [vendors]);
 
   useEffect(() => {
     console.log("USEFFECT VENDOR", vendor);
@@ -132,13 +140,14 @@ const BillForm = () => {
     });
   }, [vendor]);
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    console.log("USEFFECT Prods", prods);
     setForm({...form, prods: [...prods]});
+  }, [prods]);
+
+  const handleSubmit = () => {
     setPreview(true);
   };
-
-  const roundto2decimal = (num: number) =>
-    Math.round((num + Number.EPSILON) * 100) / 100;
 
   const calculateAllFields = () => {
     console.log("CHANGED");
@@ -147,7 +156,7 @@ const BillForm = () => {
       prod.amtF = prod.amt == 0 ? "" : prod.amt.toString();
     });
     setProds([...prods]);
-    const invNo: string = form.no ? getFinYear() + "/" + form.no : "";
+    const invNo: string = form.no ? getFinYear(form.IDate) + "/" + form.no : "";
     const total: number = prods.reduce((acc, prod) => acc + prod.amt, 0);
     const discamt: number = roundto2decimal(
       ((form.discount || 0) * total) / 100
@@ -165,6 +174,7 @@ const BillForm = () => {
     const Gtotal: number = Math.floor(
       lessdisc + (CGST || 0) + (SGST || 0) + (IGST || 0) + 0.5
     );
+    const GtotalText = Gtotal == 0 ? form.GtotalText : price_in_words(Gtotal);
     const calculatedFields: Partial<BForm> = {
       total,
       discamt,
@@ -174,14 +184,239 @@ const BillForm = () => {
       IGST,
       Gtotal,
       invNo,
+      GtotalText,
     };
+    console.log("CALCULATED FIELDS", {...form, ...calculatedFields}, form);
     setForm({...form, ...calculatedFields});
   };
 
-  return preview ? (
+  const saveDoc = () => {
+    const input = document.getElementById("billdoc");
+    if (input == null) return;
+    html2canvas(input).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      // console.log(imgData);
+      const pdf = new jsPDF("p", "mm", "a4");
+      const width = pdf.internal.pageSize.getWidth();
+      const height = pdf.internal.pageSize.getHeight();
+      pdf.addImage(imgData, "PNG", 0, 0, width, height);
+      // pdf.output('dataurlnewwindow');
+      pdf.save(`${form.pname}_${form.type}_${form.no}.pdf`);
+    });
+  };
+
+  const saveInvoice = async () => {
+    const parts: any = {
+      1: {
+        sr1: undefined,
+        part1: undefined,
+        HSN1: undefined,
+        QTY1: undefined,
+        typ1: undefined,
+        rate1: undefined,
+        amt1: undefined,
+        amtF1: undefined,
+      },
+      2: {
+        sr2: undefined,
+        part2: undefined,
+        HSN2: undefined,
+        QTY2: undefined,
+        typ2: undefined,
+        rate2: undefined,
+        amt2: undefined,
+        amtF2: undefined,
+      },
+
+      3: {
+        sr3: undefined,
+        part3: undefined,
+        HSN3: undefined,
+        QTY3: undefined,
+        typ3: undefined,
+        rate3: undefined,
+        amt3: undefined,
+        amtF3: undefined,
+      },
+
+      4: {
+        sr4: undefined,
+        part4: undefined,
+        HSN4: undefined,
+        QTY4: undefined,
+        typ4: undefined,
+        rate4: undefined,
+        amt4: undefined,
+        amtF4: undefined,
+      },
+      5: {
+        sr5: undefined,
+        part5: undefined,
+        HSN5: undefined,
+        QTY5: undefined,
+        typ5: undefined,
+        rate5: undefined,
+        amt5: undefined,
+        amtF5: undefined,
+      },
+      6: {
+        sr6: undefined,
+        part6: undefined,
+        HSN6: undefined,
+        QTY6: undefined,
+        typ6: undefined,
+        rate6: undefined,
+        amt6: undefined,
+        amtF6: undefined,
+      },
+      7: {
+        sr7: undefined,
+        part7: undefined,
+        HSN7: undefined,
+        QTY7: undefined,
+        typ7: undefined,
+        rate7: undefined,
+        amt7: undefined,
+        amtF7: undefined,
+      },
+      8: {
+        sr8: undefined,
+        part8: undefined,
+        HSN8: undefined,
+        QTY8: undefined,
+        typ8: undefined,
+        rate8: undefined,
+        amt8: undefined,
+        amtF8: undefined,
+      },
+      9: {
+        sr9: undefined,
+        part9: undefined,
+        HSN9: undefined,
+        QTY9: undefined,
+        typ9: undefined,
+        rate9: undefined,
+        amt9: undefined,
+        amtF9: undefined,
+      },
+      10: {
+        sr10: undefined,
+        part10: undefined,
+        HSN10: undefined,
+        QTY10: undefined,
+        typ10: undefined,
+        rate10: undefined,
+        amt10: undefined,
+        amtF10: undefined,
+      },
+      11: {
+        sr11: undefined,
+        part11: undefined,
+        HSN11: undefined,
+        QTY11: undefined,
+        typ11: undefined,
+        rate11: undefined,
+        amt11: undefined,
+        amtF11: undefined,
+      },
+      12: {
+        sr12: undefined,
+        part12: undefined,
+        HSN12: undefined,
+        QTY12: undefined,
+        typ12: undefined,
+        rate12: undefined,
+        amt12: undefined,
+        amtF12: undefined,
+      },
+      13: {
+        sr13: undefined,
+        part13: undefined,
+        HSN13: undefined,
+        QTY13: undefined,
+        typ13: undefined,
+        rate13: undefined,
+        amt13: undefined,
+        amtF13: undefined,
+      },
+    };
+    for (let index = 0; index < form.prods.length; index++) {
+      const prod = form.prods[index];
+      parts[index + 1] = {
+        [`sr${index + 1}`]: index + 1,
+        [`part${index + 1}`]: prod.part,
+        [`HSN${index + 1}`]: prod.HSN,
+        [`QTY${index + 1}`]: prod.QTY,
+        [`typ${index + 1}`]: prod.type,
+        [`rate${index + 1}`]: prod.rate,
+        [`amt${index + 1}`]: prod.amt,
+        [`amtf${index + 1}`]: prod.amtF,
+      };
+    }
+    const invoice: Partial<InvoiceDocument> = {
+      pname: form.pname,
+      GSTN: form.GSTN,
+      add1: form.add1,
+      add2: form.add2,
+      add3: form.add3,
+      type: form.type,
+      no: form.no,
+      invNo: form.invNo,
+      IDate: form.IDate,
+      d: form.IDate?.getDate(),
+      m: form.IDate ? form.IDate.getMonth() + 1 : undefined,
+      y: form.IDate?.getFullYear(),
+      ChNo: form.ChNo,
+      CDate: form.CDate,
+      PONo: form.PONo,
+      Pdate: form.Pdate,
+      Eway: form.Eway,
+
+      ...flattenObjectWithoutDelimiter(parts),
+
+      discount: form.discount,
+      discamt: form.discamt || 0,
+      pnf: form.pnf,
+      total: form.total,
+      lessdisc: form.lessdisc,
+      CGST: form.CGST,
+      SGST: form.SGST,
+      IGST: form.IGST,
+      Gtotal: form.Gtotal,
+      GtotalText: !!form.GtotalText ? "Rupees " + form.GtotalText : null,
+    };
+
+    try {
+      if (!!editForm) {
+        const result = await axios.put("/api/invoice/" + editForm.id, invoice);
+        if (result.status === 200) {
+          console.log("Updated invoice");
+          callback();
+        }
+      } else {
+        const result = await axios.post("/api/invoice", invoice);
+        console.log(result);
+        if (result.status === 201) {
+          console.log("Added invoice");
+          callback();
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return loading ? (
+    <div>loading...</div>
+  ) : preview ? (
     <>
       <div className="flex justify-end">
-        <Button className="mx-5 bg-green-700 text-white">Accept</Button>
+        <Button className="bg-gray-400" onClick={saveDoc}>
+          Download PDF
+        </Button>
+        <Button className="mx-5 bg-green-700 text-white" onClick={saveInvoice}>
+          Accept
+        </Button>
         <Button
           className="bg-red-500 text-white"
           onClick={() => setPreview(false)}
@@ -189,10 +424,12 @@ const BillForm = () => {
           Go Back to form
         </Button>
       </div>
-      <FormattedBill form={form} />
+      <div>
+        <FormattedBill form={form} />
+      </div>
     </>
   ) : (
-    <div className=" mx-auto mt-8 relative">
+    <div className=" mx-auto px-16 mt-8 relative">
       <div className="flex justify-between sticky top-5">
         <h2 className="text-2xl font-bold mb-4">Product Form</h2>
         <Button
@@ -209,19 +446,21 @@ const BillForm = () => {
             Product Name
           </label>
           <div className="flex">
-            <Combobox
-              id="pname"
-              className="w-full"
-              items={vendors.map((v: VendorDocument) => ({
-                label: `${v.PartyName} (${v.GSTNo})`,
-                value: JSON.stringify(v),
-              }))}
-              initValue={JSON.stringify(vendor)}
-              onChange={(value: any) => {
-                if (value) setVendor(JSON.parse(value));
-              }}
-              placeholderText={"Select Party"}
-            />
+            {vendors.length > 0 && (
+              <Combobox
+                id="pname"
+                className="w-full"
+                items={vendors.map((v: VendorDocument) => ({
+                  label: `${v.PartyName} (${v.GSTNo})`,
+                  value: JSON.stringify(v),
+                }))}
+                initValue={JSON.stringify(vendor)}
+                onChange={(value: any) => {
+                  if (value) setVendor(JSON.parse(value));
+                }}
+                placeholderText={"Select Party"}
+              />
+            )}
           </div>
 
           {/* <Select
@@ -264,7 +503,7 @@ const BillForm = () => {
             id="add1"
             defaultValue={form.add1}
             onChange={(event) => setForm({...form, add1: event.target.value})}
-            placeholder="Enter GST"
+            placeholder="Enter ADD1"
             type="text"
           />
         </div>
@@ -276,7 +515,7 @@ const BillForm = () => {
             id="add2"
             defaultValue={form.add2}
             onChange={(event) => setForm({...form, add2: event.target.value})}
-            placeholder="Enter GST"
+            placeholder="Enter ADD2"
             type="text"
           />
         </div>
@@ -288,7 +527,7 @@ const BillForm = () => {
             id="add3"
             defaultValue={form.add3}
             onChange={(event) => setForm({...form, add3: event.target.value})}
-            placeholder="Enter GST"
+            placeholder="Enter ADD3"
             type="text"
           />
         </div>
@@ -350,7 +589,9 @@ const BillForm = () => {
                   <Calendar
                     // defaultMonth={new Date()}
                     onDayClick={(day: Date) => {
-                      setForm({...form, IDate: day});
+                      // setForm({...form, IDate: day});
+                      form.IDate = day;
+                      calculateAllFields();
                       setIdatepopoverOpen(false); //
                     }}
                   />
@@ -479,6 +720,7 @@ const BillForm = () => {
           <Input
             id="eway"
             placeholder="Enter Eway"
+            value={form.Eway}
             onChange={(event) => setForm({...form, Eway: event.target.value})}
             type="text"
           />
@@ -762,6 +1004,19 @@ const BillForm = () => {
             Gross Total
           </label>
           <Input readOnly id="gtotal" value={form.Gtotal} type="number" />
+        </div>
+        <div>
+          <label className="block font-medium mb-1" htmlFor="gtotalText">
+            Gross Total in words
+          </label>
+          <Input
+            id="gtotalText"
+            value={"Rupees " + form.GtotalText}
+            onChange={(element) =>
+              setForm({...form, GtotalText: element.target.value})
+            }
+            type="text"
+          />
         </div>
       </form>
     </div>

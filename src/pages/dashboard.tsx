@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import VendorTable from "@/components/vendors";
 import BillForm from "@/components/billForm";
+import InvoiceTable from "@/components/invoiceTable";
 
 interface NavItem {
   label: string;
@@ -8,13 +9,13 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  {label: "Generate Bill", path: "/generate-bill"},
-  {label: "Add Vendor", path: "/add-vendor"},
+  // {label: "Generate Bill", path: "/generate-bill"},
   {label: "Manage Invoices", path: "/manage-invoices"},
+  {label: "Manage Vendors", path: "/manage-vendors"},
 ];
 
 const Dashboard = () => {
-  const [selectedNav, setSelectedNav] = useState<string>("/generate-bill");
+  const [selectedNav, setSelectedNav] = useState<string>("/manage-invoices");
   // const router = useRouter();
 
   const handleNavClick = (path: string) => {
@@ -46,11 +47,11 @@ const Dashboard = () => {
         </div>
       </nav>
       <main className="flex-grow p-4 overflow-auto">
-        {selectedNav === "/generate-bill" && <BillForm />}
-        {selectedNav === "/add-vendor" && <VendorTable />}
-        {selectedNav === "/manage-invoices" && <ManageInvoicesContent />}
+        {/* {selectedNav === "/generate-bill" && <BillForm />} */}
+        {selectedNav === "/manage-vendors" && <VendorTable />}
+        {selectedNav === "/manage-invoices" && <InvoiceTable />}
         {selectedNav === "/" && ( // Welcome content for root path
-          <BillForm />
+          <InvoiceTable />
         )}
       </main>
     </div>
