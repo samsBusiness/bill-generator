@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prettier:format": "prettier \"**/*.{ts,tsx,js,css,json,scss}\" --write"
+    "prettier:format": "prettier \"**/*.{ts,tsx,js,css,json,scss}\" --write",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
