@@ -27,7 +27,7 @@ const InvoiceTable = () => {
   const [rowData, setRowData] = useState<any[]>([]);
   const [editForm, setEditForm] = useState<any>();
   const [showForm, setShowForm] = useState<boolean>(false);
-  const [callback, setCallback] = useState<Function>(() => {});
+  const [callback, setCallback] = useState<any>(null);
   const gridRef = useRef<any>(null);
 
   useEffect(() => {
@@ -159,7 +159,7 @@ const InvoiceTable = () => {
             amtF: copyForm[`amtF${index + 1}`],
           });
         }
-        if (!!copyForm?.GSTN) {
+        if (copyForm?.GSTN) {
           vendor = editForm.vendors.find(
             (vendor: VendorDocument) => vendor.GSTNo === copyForm.GSTN
           );
@@ -171,11 +171,11 @@ const InvoiceTable = () => {
           type: copyForm.type || "",
           no: copyForm.no,
           invNo: copyForm.invNo,
-          IDate: !!copyForm.IDate ? new Date(copyForm.IDate) : undefined,
+          IDate: copyForm.IDate ? new Date(copyForm.IDate) : undefined,
           ChNo: copyForm.ChNo,
-          CDate: !!copyForm.CDate ? new Date(copyForm.CDate) : undefined,
+          CDate: copyForm.CDate ? new Date(copyForm.CDate) : undefined,
           PONo: copyForm.PONo,
-          Pdate: !!copyForm.Pdate ? new Date(copyForm.Pdate) : undefined,
+          Pdate: copyForm.Pdate ? new Date(copyForm.Pdate) : undefined,
           Eway: copyForm.Eway,
           discount: copyForm.discount,
           pnf: copyForm.pnf,
@@ -220,7 +220,7 @@ const InvoiceTable = () => {
           IGST,
           Gtotal,
           invNo,
-          GtotalText: !!GtotalText ? GtotalText : "Zero only",
+          GtotalText: GtotalText ? GtotalText : "Zero only",
         };
         editForm.form = {...editForm.form, ...calculatedFields};
         const callback = () => {

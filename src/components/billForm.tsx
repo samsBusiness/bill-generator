@@ -1,4 +1,4 @@
-import React, {use, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {
   SelectValue,
   SelectTrigger,
@@ -383,11 +383,11 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
       SGST: form.SGST,
       IGST: form.IGST,
       Gtotal: form.Gtotal,
-      GtotalText: !!form.GtotalText ? "Rupees " + form.GtotalText : null,
+      GtotalText: form.GtotalText ? "Rupees " + form.GtotalText : null,
     };
 
     try {
-      if (!!editForm) {
+      if (editForm) {
         const result = await axios.put("/api/invoice/" + editForm.id, invoice);
         if (result.status === 200) {
           console.log("Updated invoice");

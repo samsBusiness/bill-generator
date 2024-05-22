@@ -1,6 +1,5 @@
 import React, {useState} from "react";
 import VendorTable from "@/components/vendors";
-import BillForm from "@/components/billForm";
 import InvoiceTable from "@/components/invoiceTable";
 
 interface NavItem {
@@ -54,16 +53,6 @@ const Dashboard = () => {
           <InvoiceTable />
         )}
       </main>
-    </div>
-  );
-};
-
-const ManageInvoicesContent = () => {
-  // Content for managing invoices
-  return (
-    <div>
-      <h1>Manage Invoice Records</h1>
-      {/* Table or functionality for managing invoices */}
     </div>
   );
 };

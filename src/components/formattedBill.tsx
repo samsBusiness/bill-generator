@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {BForm, Product} from "./billForm";
 import Dateformat from "dateformat";
-import {price_in_words} from "@/lib/utils";
 interface props {
   form: BForm;
 }
