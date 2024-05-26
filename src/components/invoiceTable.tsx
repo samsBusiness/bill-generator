@@ -28,6 +28,7 @@ const InvoiceTable = () => {
   const [editForm, setEditForm] = useState<any>();
   const [showForm, setShowForm] = useState<boolean>(false);
   const [callback, setCallback] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const gridRef = useRef<any>(null);
 
   useEffect(() => {
@@ -40,6 +41,7 @@ const InvoiceTable = () => {
   }, []);
 
   const fetchInvoices = async () => {
+    setLoading(true);
     try {
       const response = await axios.get("/api/invoice");
       if (response.data.success) {
@@ -47,6 +49,8 @@ const InvoiceTable = () => {
       }
     } catch (error) {
       console.error("Error fetching invoices:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -481,37 +485,41 @@ const InvoiceTable = () => {
         </button>
       </div>
       <div className="ag-theme-alpine" style={{height: 600, width: "100%"}}>
-        <AgGridReact
-          ref={gridRef}
-          columnDefs={columnDefs}
-          rowData={rowData}
-          defaultColDef={{
-            sortable: true,
-            filter: true,
-            suppressMenu: true,
-          }}
-          enableRangeSelection={true}
-          onPasteStart={(value) => {
-            console.log(value);
-          }}
-          onPasteEnd={(value) => {
-            console.log("PASTE END:", value);
-          }}
-          suppressClipboardPaste={false}
-          processDataFromClipboard={(params: any) => {
-            const invoicesTobeAdded = params.data;
-            console.log(invoicesTobeAdded);
-            handleBulkSave(invoicesTobeAdded);
-            return invoicesTobeAdded;
-          }}
-          suppressLastEmptyLineOnPaste={true}
-          copyHeadersToClipboard={false}
-          rowSelection="multiple"
-          alwaysShowHorizontalScroll={true}
-          pagination={true}
-          paginationPageSize={20}
-          columnMenu="new"
-        />
+        {loading ? (
+          <div className=" mx-auto my-auto spinner"></div>
+        ) : (
+          <AgGridReact
+            ref={gridRef}
+            columnDefs={columnDefs}
+            rowData={rowData}
+            defaultColDef={{
+              sortable: true,
+              filter: true,
+              suppressMenu: true,
+            }}
+            enableRangeSelection={true}
+            onPasteStart={(value) => {
+              console.log(value);
+            }}
+            onPasteEnd={(value) => {
+              console.log("PASTE END:", value);
+            }}
+            suppressClipboardPaste={false}
+            processDataFromClipboard={(params: any) => {
+              const invoicesTobeAdded = params.data;
+              console.log(invoicesTobeAdded);
+              handleBulkSave(invoicesTobeAdded);
+              return invoicesTobeAdded;
+            }}
+            suppressLastEmptyLineOnPaste={true}
+            copyHeadersToClipboard={false}
+            rowSelection="multiple"
+            alwaysShowHorizontalScroll={true}
+            pagination={true}
+            paginationPageSize={20}
+            columnMenu="new"
+          />
+        )}
       </div>
     </>
   );

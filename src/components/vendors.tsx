@@ -31,6 +31,7 @@ interface Vendor {
 
 const VendorTable: React.FC = () => {
   const [rowData, setRowData] = useState<Vendor[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const gridRef = useRef<any>(null);
 
   useEffect(() => {
@@ -41,6 +42,7 @@ const VendorTable: React.FC = () => {
   }, []);
 
   const fetchVendors = async () => {
+    setLoading(true);
     try {
       const response = await axios.get("/api/vendors");
       const vendors = response.data.map((vendor: any) => ({
@@ -52,6 +54,8 @@ const VendorTable: React.FC = () => {
       setRowData(vendors);
     } catch (error) {
       console.error("Error fetching vendors:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -364,41 +368,45 @@ const VendorTable: React.FC = () => {
         Add New Row
       </button> */}
       <div className="ag-theme-alpine ag-grid-react always-show-horizontal-scroll">
-        <AgGridReact
-          ref={gridRef}
-          rowData={rowData}
-          columnDefs={columnDefs}
-          defaultColDef={{
-            resizable: true,
-            suppressMenu: true,
-            filter: true,
-          }}
-          // singleClickEdit={true}
-          domLayout="autoHeight"
-          enableRangeSelection={true}
-          groupSelectsChildren={true}
-          onPasteStart={(value) => {
-            console.log(value);
-          }}
-          onPasteEnd={(value) => {
-            console.log("PASTE END:", value);
-          }}
-          suppressClipboardPaste={false}
-          processDataFromClipboard={(params) => {
-            const vendorsTobeAdded = params.data;
-            console.log(vendorsTobeAdded);
-            handleBulkSave(vendorsTobeAdded);
-            return vendorsTobeAdded;
-          }}
-          suppressLastEmptyLineOnPaste={true}
-          copyHeadersToClipboard={false}
-          rowSelection="multiple"
-          alwaysShowHorizontalScroll={true}
-          gridOptions={{alwaysShowHorizontalScroll: true}}
-          pagination={true}
-          paginationPageSize={20}
-          columnMenu="new"
-        />
+        {loading ? (
+          <div className=" mx-auto my-auto spinner"></div>
+        ) : (
+          <AgGridReact
+            ref={gridRef}
+            rowData={rowData}
+            columnDefs={columnDefs}
+            defaultColDef={{
+              resizable: true,
+              suppressMenu: true,
+              filter: true,
+            }}
+            // singleClickEdit={true}
+            domLayout="autoHeight"
+            enableRangeSelection={true}
+            groupSelectsChildren={true}
+            onPasteStart={(value) => {
+              console.log(value);
+            }}
+            onPasteEnd={(value) => {
+              console.log("PASTE END:", value);
+            }}
+            suppressClipboardPaste={false}
+            processDataFromClipboard={(params) => {
+              const vendorsTobeAdded = params.data;
+              console.log(vendorsTobeAdded);
+              handleBulkSave(vendorsTobeAdded);
+              return vendorsTobeAdded;
+            }}
+            suppressLastEmptyLineOnPaste={true}
+            copyHeadersToClipboard={false}
+            rowSelection="multiple"
+            alwaysShowHorizontalScroll={true}
+            gridOptions={{alwaysShowHorizontalScroll: true}}
+            pagination={true}
+            paginationPageSize={20}
+            columnMenu="new"
+          />
+        )}
       </div>
     </div>
   );

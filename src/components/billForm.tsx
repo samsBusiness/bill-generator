@@ -192,18 +192,21 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
   };
 
   const saveDoc = () => {
+    setLoading(true);
     const input = document.getElementById("billdoc");
     if (input == null) return;
-    html2canvas(input).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      // console.log(imgData);
-      const pdf = new jsPDF("p", "mm", "a4");
-      const width = pdf.internal.pageSize.getWidth();
-      const height = pdf.internal.pageSize.getHeight();
-      pdf.addImage(imgData, "PNG", 0, 0, width, height);
-      // pdf.output('dataurlnewwindow');
-      pdf.save(`${form.pname}_${form.type}_${form.no}.pdf`);
-    });
+    html2canvas(input)
+      .then((canvas) => {
+        const imgData = canvas.toDataURL("image/png");
+        // console.log(imgData);
+        const pdf = new jsPDF("p", "mm", "a4");
+        const width = pdf.internal.pageSize.getWidth();
+        const height = pdf.internal.pageSize.getHeight();
+        pdf.addImage(imgData, "PNG", 0, 0, width, height);
+        // pdf.output('dataurlnewwindow');
+        pdf.save(`${form.pname}_${form.type}_${form.no}.pdf`);
+      })
+      .finally(() => setLoading(false));
   };
 
   const saveInvoice = async () => {
@@ -408,7 +411,10 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
   };
 
   return loading ? (
-    <div>loading...</div>
+    <>
+      <span>Exporting to PDF : </span>
+      <div className="spinner"></div>
+    </>
   ) : preview ? (
     <>
       <div className="flex justify-end">

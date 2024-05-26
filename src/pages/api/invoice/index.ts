@@ -23,7 +23,7 @@ export default async function handler(
   switch (method) {
     case "GET":
       try {
-        const invoices = await Invoice.find({});
+        const invoices = await Invoice.find({}).sort({_id: 1});
         res.status(200).json({success: true, data: invoices});
       } catch (error) {
         res.status(400).json({success: false});
