@@ -19,10 +19,13 @@ export const Combobox: React.FC<any> = ({
   placeholderText,
   className,
   initValue,
+  allowAdd = false,
 }) => {
+  const [options, setOptions] = useState(items);
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(initValue);
   const [filteredItems, setFilteredItems] = useState(items);
+  const [customValue, setCustomValue] = useState(""); // State for custom value
 
   useEffect(() => {
     onChange(value);
@@ -30,10 +33,23 @@ export const Combobox: React.FC<any> = ({
 
   const handleSearch = (query: string) => {
     setFilteredItems(
-      items.filter((item: any) =>
-        item.label.toLowerCase().includes(query.toLowerCase())
+      options.filter((option: any) =>
+        option.label.toLowerCase().includes(query.toLowerCase())
       )
     );
+  };
+
+  const handleCustomValueChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setCustomValue(event.target.value);
+  };
+  const handleAddCustomValue = () => {
+    if (customValue) {
+      setValue(customValue);
+      setOptions([...options, {label: customValue, value: customValue}]);
+      setOpen(false);
+    }
   };
   return (
     <div className={className}>
@@ -46,14 +62,17 @@ export const Combobox: React.FC<any> = ({
             className="w-full justify-between"
           >
             {value ? (
-              items.find((item: any) => item.value === value)?.label
+              options.find((option: any) => option.value === value)?.label
             ) : (
               <p>{placeholderText}</p>
             )}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height]">
+        <PopoverContent
+          align="start"
+          className=" max-h-[--radix-popover-content-available-height] "
+        >
           <Command>
             <CommandInput
               placeholder="Search Items..."
@@ -83,6 +102,30 @@ export const Combobox: React.FC<any> = ({
                 ))}
               </CommandList>
             </CommandGroup>
+            {allowAdd && (
+              <div className="mt-2">
+                <input
+                  type="text"
+                  value={customValue}
+                  onChange={handleCustomValueChange}
+                  placeholder="Type your own value"
+                  className="border border-gray-300 rounded-md px-3 py-2 w-full"
+                  onKeyDown={(event: any) => {
+                    if (event.key === "Enter") {
+                      handleAddCustomValue();
+                      event.preventDefault();
+                    }
+                  }}
+                />
+                <Button
+                  onClick={handleAddCustomValue}
+                  size={"sm"}
+                  className="mt-1"
+                >
+                  Add
+                </Button>
+              </div>
+            )}
           </Command>
         </PopoverContent>
       </Popover>

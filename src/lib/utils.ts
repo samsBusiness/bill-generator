@@ -1,6 +1,6 @@
 import {type ClassValue, clsx} from "clsx";
 import {twMerge} from "tailwind-merge";
-
+import jwt from "jsonwebtoken";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -156,4 +156,23 @@ export const getFinYear = (date: Date = new Date()) => {
     "-" +
     (currentYear + 1).toString().substring(2)
   );
+};
+
+export const verifyToken = (token: string) => {
+  const JWT_SECRET = "alimanbg";
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error: any) {
+    if (error instanceof jwt.TokenExpiredError) {
+      // Handle token expiration error
+      console.log("Token has expired. Please login again.");
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      // Handle invalid token error
+      console.log("Invalid token. Please login again.");
+    } else {
+      // Handle other errors
+      console.error("Error verifying token:", error.message);
+    }
+    return null;
+  }
 };

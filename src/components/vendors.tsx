@@ -353,7 +353,7 @@ const VendorTable: React.FC = () => {
       <div className="flex justify-between">
         <h1 className="text-4xl text-center">Vendors</h1>
         <button
-          className="px-4 py-2 text-gray-500 text-xl border-[1px] border-slate-200 hover:bg-slate-600 hover:text-white rounded-md mb-2"
+          className="px-4 py-2 text-gray-500 border-[1px] border-slate-200 hover:bg-slate-600 hover:text-white rounded-md mb-2"
           onClick={addNewRow}
         >
           + Add Vendor

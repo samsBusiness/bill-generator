@@ -98,6 +98,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
   const [CdatepopoverOpen, setCdatepopoverOpen] = useState(false);
   const [PdatepopoverOpen, setPdatepopoverOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const ProductunitTypes = ["Kgs", "Pcs", "Sets"];
   useEffect(() => {
     setLoading(true);
     console.log("USEFFECT first");
@@ -823,7 +824,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
                 >
                   Type
                 </label>
-                <Select
+                {/* <Select
                   defaultValue={prod.type}
                   onValueChange={(value) => (prod.type = value)}
                 >
@@ -834,7 +835,19 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
                     <SelectItem value="Kgs">Kgs</SelectItem>
                     <SelectItem value="Pcs">Pcs</SelectItem>
                   </SelectContent>
-                </Select>
+                </Select> */}
+                <Combobox
+                  id={`type-${prod.sr}`}
+                  // className="w-full"
+                  items={ProductunitTypes.map((option: any) => ({
+                    label: option,
+                    value: option,
+                  }))}
+                  initValue={ProductunitTypes[0]}
+                  onChange={(value: any) => (prod.type = value)}
+                  placeholderText={"Select Unit"}
+                  allowAdd
+                />
               </div>
               <div className="my-1 sm:my-0 sm:mx-1">
                 <label

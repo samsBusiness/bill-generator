@@ -1,6 +1,8 @@
 import React, {useState} from "react";
 import VendorTable from "@/components/vendors";
 import InvoiceTable from "@/components/invoiceTable";
+import useAuth from "@/hooks/useAuth";
+import {useRouter} from "next/router";
 
 interface NavItem {
   label: string;
@@ -15,11 +17,21 @@ const navItems: NavItem[] = [
 
 const Dashboard = () => {
   const [selectedNav, setSelectedNav] = useState<string>("/manage-invoices");
+  const isAuthenticated = useAuth();
+  const router = useRouter();
+
+  if (!isAuthenticated) {
+    return null; // Optionally, you can return a loading indicator
+  }
   // const router = useRouter();
 
   const handleNavClick = (path: string) => {
     setSelectedNav(path);
     // router.push(path);
+  };
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    router.replace("/");
   };
 
   return (
@@ -43,6 +55,12 @@ const Dashboard = () => {
               </li>
             ))}
           </ul>
+          <button
+            onClick={handleLogout}
+            className="ml-auto bg-rose-200 hover:bg-rose-500 px-3 py-1 rounded-md"
+          >
+            Logout
+          </button>
         </div>
       </nav>
       <main className="flex-grow p-4 overflow-auto">

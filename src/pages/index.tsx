@@ -30,6 +30,8 @@ export default function Home() {
       .post(`/api/login`, {username: username, password: password})
       .then((res) => {
         if (res.status == 200) {
+          const {token} = res.data;
+          localStorage.setItem("token", token);
           router.push("/dashboard");
         }
       })
@@ -40,6 +42,12 @@ export default function Home() {
       .finally(() => {
         setLoading(false);
       });
+  };
+
+  const handleKeyPress = (event: any) => {
+    if (event.key === "Enter") {
+      handleSubmit();
+    }
   };
 
   return (
@@ -79,6 +87,7 @@ export default function Home() {
                 id="password"
                 placeholder="Enter your password"
                 type="password"
+                onKeyDown={handleKeyPress}
               />
             </div>
           </CardContent>

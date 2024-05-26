@@ -4,6 +4,7 @@ import {IUser, User} from "../../models/user";
 import connectDb from "@/models/connectDb";
 // import  from '../../models/connectDb';
 // import bcrypt from 'bcryptjs';
+import jwt from "jsonwebtoken";
 
 connectDb();
 
@@ -28,8 +29,9 @@ export default async function handler(
         return res.status(401).json({message: "Invalid username or password"});
       }
 
+      const token = jwt.sign({id: user._id}, "alimanbg", {expiresIn: "12h"});
       // Authentication successful
-      return res.status(200).json({message: "Login successful"});
+      return res.status(200).json({success: true, token});
     } catch (error) {
       console.error(error);
       res.status(500).json({message: "Internal Server Error"});

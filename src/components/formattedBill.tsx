@@ -122,7 +122,7 @@ const FormattedBill: React.FC<props> = ({form}) => {
                     {product.HSN}
                   </td>
                   <td className="text-[11px] px-2 py-1 text-center">
-                    {product.QTY + product.type}
+                    {product.QTY + " " + product.type}
                   </td>
                   <td className="text-[11px] px-2 py-1 text-right">
                     {product.rate}
