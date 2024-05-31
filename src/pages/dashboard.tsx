@@ -38,7 +38,12 @@ const Dashboard = () => {
     <div className="h-screen  ">
       <nav className=" bg-gray-100  flex justify-between">
         <div className="px-4 py-6 flex-grow flex items-center">
-          <h1 className="text-black text-lg font-bold mr-3">Dashboard</h1>
+          <h1
+            onClick={() => handleNavClick("/")}
+            className="text-black text-lg font-bold mr-3 cursor-pointer"
+          >
+            Dashboard
+          </h1>
           <ul className="flex">
             {navItems.map((item) => (
               <li key={item.path} className="py-2">

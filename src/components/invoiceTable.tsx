@@ -2,11 +2,13 @@ import React, {useState, useEffect, useRef} from "react";
 import {AgGridReact} from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-
+import moment from "moment";
 import axios from "axios";
 import BillForm, {BForm} from "./billForm";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBars, faFileExcel} from "@fortawesome/free-solid-svg-icons";
+import Dateformat from "dateformat";
+
 // import {
 //   DropdownMenu,
 //   DropdownMenuContent,
@@ -22,6 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import {Column, GridApi} from "ag-grid-enterprise";
 
 const InvoiceTable = () => {
   const [rowData, setRowData] = useState<any[]>([]);
@@ -57,9 +60,10 @@ const InvoiceTable = () => {
   const handleExport = () => {
     const fileName = window.prompt("Enter the file name", "exported_data.xlsx");
     if (fileName) {
-      const gridApi = gridRef.current.api;
+      const gridApi: GridApi = gridRef.current.api;
       gridApi.exportDataAsExcel({
         fileName: fileName,
+        columnKeys: getFilteredColumns(gridApi.getAllGridColumns()),
       });
     }
   };
@@ -91,7 +95,7 @@ const InvoiceTable = () => {
   };
 
   const handleBulkSave = async (invoices: any[]) => {
-    const form_nos = rowData.map((iv: InvoiceDocument) => iv.no);
+    const form_nos = rowData.map((iv: InvoiceDocument) => iv.invNo);
     const invoicesToBeAdded = invoices
       .map((iv) => {
         const invoice: any = {};
@@ -105,7 +109,10 @@ const InvoiceTable = () => {
             columnDefs[i].type != null &&
             columnDefs[i].type == "date"
           ) {
-            invoice[columnDefs[i].field] = new Date(iv[i - 2]);
+            invoice[columnDefs[i].field] = moment(
+              iv[i - 2],
+              "DD-MM-YYYY"
+            ).toDate();
           } else if (
             !!iv[i - 2] &&
             columnDefs[i].type != null &&
@@ -119,7 +126,10 @@ const InvoiceTable = () => {
 
         return invoice;
       })
-      .filter((iv) => !!iv.no && !form_nos.includes(iv.no));
+      .filter((iv) => !!iv.invNo && !form_nos.includes(iv.invNo));
+    invoicesToBeAdded.forEach((invoice) => {
+      invoice["GtotalText"] = price_in_words(invoice["Gtotal"]) || undefined;
+    });
     try {
       const response = await axios.post("/api/invoice", invoicesToBeAdded, {
         headers: {
@@ -131,8 +141,8 @@ const InvoiceTable = () => {
       if (response.status === 201 && response.data.success) {
         fetchInvoices();
       }
-      // const createdVendor: Vendor = response.data;
-      // setRowData([...rowData, createdVendor]);
+      const createdVendor: VendorDocument = response.data;
+      setRowData([...rowData, createdVendor]);
     } catch (error) {
       console.error("Error creating vendor:", error);
     }
@@ -243,11 +253,37 @@ const InvoiceTable = () => {
     // console.log(params.data);
     // setEditForm(params.data);
   };
+
+  const getFilteredColumns = (columns: any[]) =>
+    columns.filter(
+      (col: Column) => col.getColDef().field != "edit" && !col.getColDef().hide
+    );
+
+  const handleCopy = async (paramsNode: any) => {
+    const columns = getFilteredColumns(gridRef.current.api.getAllGridColumns());
+    const data = columns.map((column) => paramsNode.data[column.colId]);
+    console.log(data);
+    // console.log(params.data);
+    // // gridRef.current.api.
+    // const copy = {...params.data, _id: undefined};
+    await navigator.clipboard.writeText(data.join("\t"));
+  };
+
+  const getContextMenuItems = (params: any) => {
+    const customItems = [
+      {
+        name: "Copy",
+        action: () => handleCopy(params.node),
+      },
+    ];
+    return customItems;
+  };
   const columnDefs = [
     {
       headerName: "",
       field: "edit",
       width: 50,
+      suppressCellFocus: true,
       cellRenderer: (params: any) => {
         return (
           // <button
@@ -270,6 +306,12 @@ const InvoiceTable = () => {
               >
                 Delete
               </DropdownMenuItem>
+              {/* <DropdownMenuItem
+                className="text-red"
+                onClick={() => handleCopy(params)}
+              >
+                Copy
+              </DropdownMenuItem> */}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -291,7 +333,7 @@ const InvoiceTable = () => {
     {headerName: "Address 2", field: "add2"},
     {headerName: "Address 3", field: "add3"},
     {headerName: "Type", field: "type"},
-    {headerName: "Number", field: "no", type: "number"},
+    {headerName: "Number", field: "no", type: "number", hide: true},
     {headerName: "Invoice Number", field: "invNo"},
     {
       headerName: "Invoice Date",
@@ -299,7 +341,7 @@ const InvoiceTable = () => {
       type: "date",
 
       valueFormatter: (params: any) =>
-        params.value && new Date(params.value).toLocaleDateString(),
+        params.value && Dateformat(new Date(params.value), "dd-mm-yyyy"),
     },
     {headerName: "D", field: "d", type: "number"},
     {headerName: "M", field: "m", type: "number"},
@@ -310,7 +352,7 @@ const InvoiceTable = () => {
       field: "CDate",
       type: "date",
       valueFormatter: (params: any) =>
-        params.value && new Date(params.value).toLocaleDateString(),
+        params.value && Dateformat(new Date(params.value), "dd-mm-yyyy"),
     },
     {headerName: "PO Number", field: "PONo"},
     {
@@ -318,7 +360,7 @@ const InvoiceTable = () => {
       field: "Pdate",
       type: "date",
       valueFormatter: (params: any) =>
-        params.value && new Date(params.value).toLocaleDateString(),
+        params.value && Dateformat(new Date(params.value), "dd-mm-yyyy"),
     },
     {headerName: "Eway", field: "Eway"},
 
@@ -497,7 +539,8 @@ const InvoiceTable = () => {
               filter: true,
               suppressMenu: true,
             }}
-            enableRangeSelection={true}
+            // enableRangeSelection={true}
+            getContextMenuItems={getContextMenuItems}
             onPasteStart={(value) => {
               console.log(value);
             }}

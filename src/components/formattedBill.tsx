@@ -37,12 +37,12 @@ const FormattedBill: React.FC<props> = ({form}) => {
         }}
         id="billdoc"
       >
-        <div className=" border-black border-[2px] w-full  text-center flex flex-col items-center p-4">
-          <p className="text-[20px] font-bold"> Tax Invoice</p>
-          <p className="text-[44px] font-bold pb-3">S. KasamAli Bros.</p>
-          <p className="text-[11px] font-bold">
+        <div className=" border-black border-[2px] w-full  text-center flex flex-col items-center py-4 px-2">
+          <p className="text-[20px] font-bold pb-0"> {form.invoiceTitle}</p>
+          <p className="text-[64px] font-bold pb-8">S. KasamAli Bros.</p>
+          <p className="text-[14px] font-bold border-b-[1px] border-black pb-1">
             Specialist in : Taps & Dies. Dealers in : HSS & Carbide Drills, Hob
-            Cutters, HSS Punches & General Hardware
+            Cutters, HSS Punches & General Hardware.
           </p>
           <p className="text-[11px] w-2/3">
             178, Mutton Street, Opp. Null Bazar, Mumbai – 400 003. Email
@@ -235,8 +235,12 @@ const FormattedBill: React.FC<props> = ({form}) => {
                   <p>• Goods once sold will not be taken back.</p>
                 </td>
                 <td colSpan={4} className="text-center ">
-                  <p>For. S. KASAMALI BROS.</p>
-                  <img src="" className="w-20 h-20 mx-auto" alt="" />
+                  <p className="pb-4">For. S. KASAMALI BROS.</p>
+                  <img
+                    src="/alisign.jpeg"
+                    className="w-full h-20 mx-auto"
+                    alt=""
+                  />
                   <p>Proprieter</p>
                 </td>
               </tr>

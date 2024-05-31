@@ -117,7 +117,7 @@ export function price_in_words(price: any) {
       }
     str = words.reverse().join("");
   } else str = "";
-  return str.length > 1 ? str + "only." : str;
+  return str.length > 1 ? str + " only." : str;
 }
 
 export function flattenObjectWithoutDelimiter(obj: any, result: any = {}) {

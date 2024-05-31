@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from "react";
-import {
-  SelectValue,
-  SelectTrigger,
-  SelectItem,
-  SelectContent,
-  Select,
-} from "@/components/ui/select";
+// import {
+//   SelectValue,
+//   SelectTrigger,
+//   SelectItem,
+//   SelectContent,
+//   Select,
+// } from "@/components/ui/select";
 import {Input} from "@/components/ui/input";
 import {PopoverTrigger, PopoverContent, Popover} from "@/components/ui/popover";
 import {Calendar} from "@/components/ui/calendar";
@@ -38,6 +38,7 @@ export interface Product {
   amtF: string;
 }
 export interface BForm {
+  invoiceTitle?: string;
   pname: string;
   GSTN: string;
   add1?: string;
@@ -102,7 +103,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
   useEffect(() => {
     setLoading(true);
     console.log("USEFFECT first");
-
+    form.invoiceTitle = "Tax Invoice";
     axios
       .get("/api/vendors")
       .then((response) => {
@@ -111,23 +112,29 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
       .finally(() => {
         setLoading(false);
       });
+    if (!form.no) {
+      setLoading(true);
+      axios
+        .get("/api/invoice/counter")
+        .then((response) => {
+          setForm({...form, no: response.data.data});
+          // console.log(response.data.data);
+          form.no = response.data.data + 1;
+          calculateAllFields();
+        })
+        .finally(() => {
+          // setLoading(false);
+        });
+    }
   }, []);
 
   useEffect(() => {
     setLoading(true);
-    console.log("EDIT FORM", editForm);
     calculateAllFields();
     setLoading(false);
   }, [editForm]);
 
   useEffect(() => {
-    if (vendors.length > 0) {
-      console.log("VENDORS ARE SETs", vendors);
-    }
-  }, [vendors]);
-
-  useEffect(() => {
-    console.log("USEFFECT VENDOR", vendor);
     setForm({
       ...form,
       pname: vendor?.PartyName || "",
@@ -142,7 +149,6 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
   }, [vendor]);
 
   useEffect(() => {
-    console.log("USEFFECT Prods", prods);
     setForm({...form, prods: [...prods]});
   }, [prods]);
 
@@ -204,7 +210,9 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
         const height = pdf.internal.pageSize.getHeight();
         pdf.addImage(imgData, "PNG", 0, 0, width, height);
         // pdf.output('dataurlnewwindow');
-        pdf.save(`${form.pname}_${form.type}_${form.no}.pdf`);
+        pdf.save(
+          `${form.invNo} ${form.pname} ${Dateformat(form.IDate, "dd-mm-yyyy")}.pdf`
+        );
       })
       .finally(() => setLoading(false));
   };
@@ -438,7 +446,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
   ) : (
     <div className=" mx-auto px-16 mt-8 relative">
       <div className="flex justify-between sticky top-5">
-        <h2 className="text-2xl font-bold mb-4">Product Form</h2>
+        <h2 className="text-2xl font-bold mb-4">Invoice Form</h2>
         <Button
           onClick={handleSubmit}
           className="bg-gray-900 text-white hover:bg-gray-800 focus:ring-gray-950 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus:ring-gray-300"
@@ -448,9 +456,23 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
         </Button>
       </div>
       <form className="space-y-4 ">
+        <div>
+          <label className="block font-medium mb-1" htmlFor="invoiceTitle">
+            Invoice Title
+          </label>
+          <Input
+            id="invoiceTitle"
+            defaultValue={form.invoiceTitle}
+            onChange={(event) =>
+              setForm({...form, invoiceTitle: event.target.value})
+            }
+            placeholder="Enter Invoice Title"
+            type="text"
+          />
+        </div>
         <div className="w-full">
           <label className="block font-medium mb-1" htmlFor="pname">
-            Product Name
+            Party Name
           </label>
           <div className="flex">
             {vendors.length > 0 && (
@@ -542,7 +564,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
           <label className="block font-medium mb-1" htmlFor="type">
             Type
           </label>
-          <Select
+          {/* <Select
             onValueChange={(value) => setForm({...form, type: value})}
             value={form.type}
           >
@@ -553,17 +575,19 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
               <SelectItem value="Invoice">Invoice</SelectItem>
               <SelectItem value="Proforma">Proforma</SelectItem>
             </SelectContent>
-          </Select>
+          </Select> */}
+          <Input readOnly value={"Invoice"}></Input>
         </div>
         {/* INVOICE *************************************************************/}
-        {form.type === "Invoice" && (
+        {
           <>
-            <div>
+            <div className="hidden">
               <label className="block font-medium mb-1" htmlFor="no">
                 No
               </label>
               <Input
                 id="num"
+                defaultValue={form.no}
                 value={form.no}
                 onChange={(event) => {
                   form.no = event.target.value;
@@ -620,29 +644,17 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
               />
             </div>
           </>
-        )}
+        }
         {/* CHALAN *************************************************************/}
-        {form.type === "Proforma" && (
+        {
           <>
-            <div>
-              <label className="block font-medium mb-1" htmlFor="no">
-                No
-              </label>
-              <Input
-                id="num"
-                value={form.no}
-                onChange={(event) => setForm({...form, no: event.target.value})}
-                placeholder="Enter Number"
-                type="number"
-              />
-            </div>
             <div>
               <label className="block font-medium mb-1" htmlFor="gst">
                 Chalan No
               </label>
               <Input
                 id="chno"
-                defaultValue={form.no ? getFinYear() + "/" + form.no : ""}
+                defaultValue={form.ChNo}
                 onChange={(event) =>
                   setForm({...form, ChNo: event.target.value})
                 }
@@ -681,7 +693,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
               </Popover>
             </div>
           </>
-        )}
+        }
         {/* PO ************************************************************ */}
         <div>
           <label className="block font-medium mb-1" htmlFor="gst">
