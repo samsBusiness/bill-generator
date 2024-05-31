@@ -38,8 +38,10 @@ const FormattedBill: React.FC<props> = ({form}) => {
         id="billdoc"
       >
         <div className=" border-black border-[2px] w-full  text-center flex flex-col items-center py-4 px-2">
-          <p className="text-[20px] font-bold pb-0"> {form.invoiceTitle}</p>
-          <p className="text-[64px] font-bold pb-8">S. KasamAli Bros.</p>
+          <p className="text-[20px] leading-[0] font-bold pb-0">
+            {form.invoiceTitle}
+          </p>
+          <p className="text-[54px]  font-bold pb-8">S. KasamAli Bros.</p>
           <p className="text-[14px] font-bold border-b-[1px] border-black pb-1">
             Specialist in : Taps & Dies. Dealers in : HSS & Carbide Drills, Hob
             Cutters, HSS Punches & General Hardware.
@@ -59,7 +61,7 @@ const FormattedBill: React.FC<props> = ({form}) => {
                 <th colSpan={4} className="text-left px-2">
                   {form.pname}
                 </th>
-                <th>INV. NO.</th>
+                <th className="w-28">INV. NO.</th>
                 <th>{form.invNo}</th>
                 <th>Date</th>
                 <th>{form.IDate ? Dateformat(form.IDate, "dd-mm-yy") : ""}</th>
@@ -99,15 +101,15 @@ const FormattedBill: React.FC<props> = ({form}) => {
           <table className="first-border mt-2 border-collapse border-[1px] border-black w-full text-[12px] tracking-wide table-fixed">
             <tbody>
               <tr className="border-b-[1px] border-black">
-                <th className="text-[10px]">Sr No</th>
-                <th className="text-[14px]" colSpan={3}>
+                <th className="text-[10px] w-10">Sr No</th>
+                <th className="text-[14px] w-[404px]" colSpan={3}>
                   Particulars
                 </th>
                 <th className="text-[14px]">HSN</th>
                 <th className="text-[14px]">Qty</th>
                 <th className="text-[12px]">Rate</th>
-                <th className="text-[14px]" colSpan={2}>
-                  Amount Rs.
+                <th className="text-[12px] w-24" colSpan={2}>
+                  Amount (Rs.)
                 </th>
               </tr>
               {products.map((product, idx) => (
