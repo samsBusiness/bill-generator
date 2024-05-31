@@ -96,15 +96,17 @@ const VendorTable: React.FC = () => {
   // }
 
   const handleAdd = async (params: any) => {
+    params.data.isNew = false;
+    params.data.isEditable = false;
     const newVendor: Vendor = {
-      PartyName: params.data.PartyName,
-      GSTNo: params.data.GSTNo,
-      Add1: params.data.Add1,
-      Add2: params.data.Add2,
-      Add3: params.data.Add3,
-      CGST: params.data.CGST,
-      SGST: params.data.SGST,
-      IGST: params.data.IGST,
+      PartyName: params.data.PartyName.trim(),
+      GSTNo: params.data.GSTNo.trim(),
+      Add1: params.data.Add1.trim(),
+      Add2: params.data.Add2.trim(),
+      Add3: params.data.Add3.trim(),
+      CGST: params.data.CGST == "y",
+      SGST: params.data.SGST == "y",
+      IGST: params.data.IGST == "y",
     };
 
     try {
@@ -122,9 +124,7 @@ const VendorTable: React.FC = () => {
 
   const handleDelete = async (params: any) => {
     try {
-      const response = await axios.delete(
-        "/api/vendors/" + rowData[params.rowIndex]._id
-      );
+      const response = await axios.delete("/api/vendors/" + params.data._id);
       console.log(response.status);
       if (response.status === 200) {
         fetchVendors();
@@ -138,11 +138,11 @@ const VendorTable: React.FC = () => {
 
   const handleSave = async (params: any) => {
     const updatedVendor: Vendor = {
-      PartyName: params.data.PartyName,
-      GSTNo: params.data.GSTNo,
-      Add1: params.data.Add1,
-      Add2: params.data.Add2,
-      Add3: params.data.Add3,
+      PartyName: params.data.PartyName.trim(),
+      GSTNo: params.data.GSTNo.trim(),
+      Add1: params.data.Add1.trim(),
+      Add2: params.data.Add2.trim(),
+      Add3: params.data.Add3.trim(),
       CGST: params.data.CGST == "y",
       SGST: params.data.SGST == "y",
       IGST: params.data.IGST == "y",
@@ -169,11 +169,11 @@ const VendorTable: React.FC = () => {
     const vendorsTobeAdded = vendors
       .map((v) => {
         const vendor: Vendor = {
-          PartyName: v[0],
-          GSTNo: v[1],
-          Add1: v[2],
-          Add2: v[3],
-          Add3: v[4],
+          PartyName: v[0].trim(),
+          GSTNo: v[1].trim(),
+          Add1: v[2].trim(),
+          Add2: v[3].trim(),
+          Add3: v[4].trim(),
           CGST: v[5] == "y" || v[5] == "Y",
           SGST: v[6] == "y" || v[6] == "Y",
           IGST: v[7] == "y" || v[7] == "Y",
@@ -189,7 +189,7 @@ const VendorTable: React.FC = () => {
         },
       });
       console.log(response.status);
-      if (response.status === 200) {
+      if (response.status === 201) {
         fetchVendors();
       }
       // const createdVendor: Vendor = response.data;

@@ -10,7 +10,7 @@ export default async function handler(
 ) {
   try {
     if (req.method === "GET") {
-      const vendors = await VendorModel.find({});
+      const vendors = await VendorModel.find({}).sort({PartyName: 1});
       res.status(200).json(vendors);
     } else if (req.method === "POST") {
       if (req.headers["x-bulk-operation"] === "true") {
