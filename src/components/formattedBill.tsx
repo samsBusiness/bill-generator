@@ -240,7 +240,7 @@ const FormattedBill: React.FC<props> = ({form}) => {
                   <p className="pb-4">For. S. KASAMALI BROS.</p>
                   <img
                     src="/alisign.jpeg"
-                    className="w-full h-20 mx-auto"
+                    className="w-3/4 h-20 mx-auto"
                     alt=""
                   />
                   <p>Proprieter</p>
