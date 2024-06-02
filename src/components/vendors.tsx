@@ -123,6 +123,10 @@ const VendorTable: React.FC = () => {
   };
 
   const handleDelete = async (params: any) => {
+    const userConfirmed = window.confirm(
+      `Are you sure you want to delete ${params.data.PartyName}`
+    );
+    if (!userConfirmed) return;
     try {
       const response = await axios.delete("/api/vendors/" + params.data._id);
       console.log(response.status);
@@ -150,7 +154,7 @@ const VendorTable: React.FC = () => {
 
     try {
       const response = await axios.put(
-        "/api/vendors/" + rowData[params.rowIndex]._id,
+        "/api/vendors/" + params.data._id,
         updatedVendor
       );
       console.log(response.status);

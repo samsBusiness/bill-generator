@@ -69,10 +69,12 @@ const InvoiceTable = () => {
   };
 
   const handleDelete = async (params: any) => {
+    const userConfirmed = window.confirm(
+      `Are you sure you want to delete invoice ${params.data.invNo}`
+    );
+    if (!userConfirmed) return;
     try {
-      const response = await axios.delete(
-        "/api/invoice/" + rowData[params.rowIndex]._id
-      );
+      const response = await axios.delete("/api/invoice/" + params.data._id);
       console.log(response.status);
       if (response.status === 200) {
         fetchInvoices();
