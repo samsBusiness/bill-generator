@@ -163,7 +163,9 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
       prod.amtF = prod.amt == 0 ? "" : prod.amt.toString();
     });
     setProds([...prods]);
-    const invNo: string = form.no ? getFinYear(form.IDate) + "/" + form.no : "";
+    const invNo: string = form.no
+      ? getFinYear(form.IDate) + "/" + String(form.no).padStart(3, "0")
+      : "";
     const total: number = prods.reduce((acc, prod) => acc + prod.amt, 0);
     const discamt: number = roundto2decimal(
       ((form.discount || 0) * total) / 100
@@ -830,7 +832,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
                     calculateAllFields();
                   }}
                   id={`qty-${prod.sr}`}
-                  value={prod.QTY}
+                  value={prod.QTY == 0 ? undefined : prod.QTY}
                   placeholder="Enter qty"
                   type="number"
                 />
@@ -880,7 +882,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
                     prod.rate = +element.target.value;
                     calculateAllFields();
                   }}
-                  value={prod.rate}
+                  value={prod.rate == 0 ? undefined : prod.rate}
                   id={`rate-${prod.sr}`}
                   placeholder="Enter Rate"
                   type="number"

@@ -205,7 +205,9 @@ const InvoiceTable = () => {
           IGST: vendor?.IGST ? 0 : undefined,
         };
         const invNo: string = editForm.form.no
-          ? getFinYear(editForm.form.IDate) + "/" + editForm.form.no
+          ? getFinYear(editForm.form.IDate) +
+            "/" +
+            String(editForm.form.no).padStart(3, "0")
           : "";
         const total: number = products.reduce((acc, prod) => acc + prod.amt, 0);
         const discamt: number = roundto2decimal(
