@@ -24,7 +24,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import {Column, GridApi} from "ag-grid-enterprise";
+import {Column, ExcelExportParams, GridApi} from "ag-grid-enterprise";
+import {ExcelCell} from "ag-grid-community";
 
 const InvoiceTable = () => {
   const [rowData, setRowData] = useState<any[]>([]);
@@ -61,9 +62,41 @@ const InvoiceTable = () => {
     const fileName = window.prompt("Enter the file name", "exported_data.xlsx");
     if (fileName) {
       const gridApi: GridApi = gridRef.current.api;
+      // const totalSGST = rowData.reduce((acc, row) => acc + row.SGST, 0);
+      // const totalCGST = rowData.reduce((acc, row) => acc + row.CGST, 0);
+      // const totalIGST = rowData.reduce((acc, row) => acc + row.IGST, 0);
+      // const totalGtotal = rowData.reduce((acc, row) => acc + row.Gtotal, 0);
+
+      const columns = gridApi.getAllGridColumns();
+      const columnKeys = getFilteredColumns(columns);
+
+      const columnsToTotal = ["SGST", "CGST", "IGST", "Gtotal"];
+
+      // Create an array for each row in the appendContent
+      const totalsRow: ExcelCell[] = columnKeys.map((key) => {
+        console.log(key.colId, key.colDef.type);
+        if (columnsToTotal.includes(key.colId)) {
+          return {
+            data: {
+              value: rowData.reduce((acc, row) => acc + row[key.colId], 0),
+              type: "Number",
+            },
+          };
+        } else return {data: {value: "", type: "String"}};
+      });
+
+      const params: ExcelExportParams = {
+        appendContent: [
+          {
+            cells: totalsRow,
+          },
+        ],
+      };
+
       gridApi.exportDataAsExcel({
         fileName: fileName,
-        columnKeys: getFilteredColumns(gridApi.getAllGridColumns()),
+        appendContent: params.appendContent,
+        columnKeys: columnKeys,
       });
     }
   };
