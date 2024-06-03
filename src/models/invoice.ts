@@ -159,7 +159,7 @@ const invoiceSchema = new mongoose.Schema({
   add3: {type: String},
   type: {type: String},
   no: {type: Number, required: true, unique: true},
-  invNo: {type: String},
+  invNo: {type: String, required: true, unique: true},
   IDate: {type: Date},
   d: {type: Number},
   m: {type: Number},

@@ -1,6 +1,7 @@
 import connectDb from "@/models/connectDb";
 import {CounterModel} from "@/models/counter";
 import {Invoice} from "@/models/invoice";
+import mongoose from "mongoose";
 import {NextApiRequest, NextApiResponse} from "next";
 
 const getNextSequenceValue = async (sequenceName: any) => {
@@ -58,10 +59,50 @@ async function handleSingleInsert(req: NextApiRequest, res: NextApiResponse) {
     const invoice = await Invoice.create(req.body);
     res.status(201).json({success: true, data: invoice});
   } catch (error: any) {
-    if (error.name === "ValidationError") {
-      res.status(400).json({message: error.message});
+    if (error instanceof mongoose.Error.ValidationError) {
+      const missingFields = [];
+      for (const [key, value] of Object.entries(error.errors)) {
+        if (value.kind === "required") {
+          missingFields.push(key);
+        }
+      }
+
+      if (missingFields.length > 0) {
+        return res.status(400).send({
+          message:
+            "Validation Error, missing required fields: " +
+            missingFields.join(", "),
+          errorType: "Missing Required Fields",
+          missingFields: missingFields,
+        });
+      }
+
+      return res.status(400).send({
+        message: "Validation Error",
+        details: error.errors,
+      });
+    } else if (error instanceof mongoose.Error.CastError) {
+      return res.status(400).send({
+        message: `Cast Error: ${error.message}`,
+        field: error.path,
+      });
+    } else if (error.code === 11000 || error.code === 11001) {
+      const field = Object.keys(error.keyValue);
+      return res.status(409).send({
+        message: `Duplicate value for field: ${field}`,
+        field: field,
+        value: error.keyValue.field,
+      });
+    } else if (error instanceof mongoose.Error.DocumentNotFoundError) {
+      return res.status(404).send({
+        message: "Document Not Found",
+        details: error.message,
+      });
     } else {
-      res.status(500).json({message: "Internal server error"});
+      return res.status(500).send({
+        message: "Some Error has occurred, please try again",
+        error: error.message,
+      });
     }
   }
 }

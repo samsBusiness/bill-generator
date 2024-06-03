@@ -122,7 +122,7 @@ export function price_in_words(price: any) {
 
 export function flattenObjectWithoutDelimiter(obj: any, result: any = {}) {
   for (const key in obj) {
-    if (obj.prototype.hasOwnProperty.call(obj, key)) {
+    if (obj.hasOwnProperty.call(obj, key)) {
       if (
         typeof obj[key] === "object" &&
         obj[key] !== null &&

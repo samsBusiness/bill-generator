@@ -10,7 +10,7 @@ import {Input} from "@/components/ui/input";
 import {PopoverTrigger, PopoverContent, Popover} from "@/components/ui/popover";
 import {Calendar} from "@/components/ui/calendar";
 import {Button} from "@/components/ui/button";
-import axios from "axios";
+import axios, {AxiosError} from "axios";
 import {VendorDocument} from "@/models/vendor";
 import Dateformat from "dateformat";
 import FormattedBill from "./formattedBill";
@@ -404,19 +404,27 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
       if (editForm) {
         const result = await axios.put("/api/invoice/" + editForm.id, invoice);
         if (result.status === 200) {
+          alert("Invoice has been updated successfully");
           console.log("Updated invoice");
           callback();
+        } else {
+          alert(result.data.message);
         }
       } else {
         const result = await axios.post("/api/invoice", invoice);
         console.log(result);
         if (result.status === 201) {
           console.log("Added invoice");
+          alert("Invoice has been added successfully");
           callback();
         }
       }
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      if (error instanceof AxiosError) {
+        alert(error.response?.data.message);
+        console.log(error.response?.data.message);
+      }
+      // alert(error.message);
     }
   };
 
@@ -431,7 +439,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
         <Button className="bg-gray-400" onClick={saveDoc}>
           Download PDF
         </Button>
-        <Button className="mx-5 bg-green-700 text-white" onClick={saveInvoice}>
+        <Button className="mx-5 bg-green-700 text-white " onClick={saveInvoice}>
           Accept
         </Button>
         <Button
@@ -601,7 +609,18 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
             </div>
             <div>
               <label className="block font-medium mb-1" htmlFor="date">
-                Invoice Date
+                Invoice Date{" "}
+                <span
+                  className="bg-red-400 text-white px-1 rounded-full"
+                  onClick={(e) => {
+                    form.IDate = undefined;
+                    calculateAllFields();
+                    e.stopPropagation();
+                    e.preventDefault();
+                  }}
+                >
+                  X
+                </span>
               </label>
               <Popover
                 open={IdatepopoverOpen}
@@ -666,7 +685,17 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
             </div>
             <div>
               <label className="block font-medium mb-1" htmlFor="chdate">
-                Chalan Date
+                Chalan Date{" "}
+                <span
+                  className="bg-red-400 text-white px-1 rounded-full"
+                  onClick={(e) => {
+                    setForm({...form, CDate: undefined});
+                    e.stopPropagation();
+                    e.preventDefault();
+                  }}
+                >
+                  X
+                </span>
               </label>
               <Popover
                 open={CdatepopoverOpen}
@@ -711,7 +740,17 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
         </div>
         <div>
           <label className="block font-medium mb-1" htmlFor="chdate">
-            PO Date
+            PO Date{" "}
+            <span
+              className="bg-red-400 text-white px-1 rounded-full"
+              onClick={(e) => {
+                setForm({...form, Pdate: undefined});
+                e.stopPropagation();
+                e.preventDefault();
+              }}
+            >
+              X
+            </span>
           </label>
           <Popover open={PdatepopoverOpen} onOpenChange={setPdatepopoverOpen}>
             <PopoverTrigger asChild>
