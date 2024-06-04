@@ -4,14 +4,14 @@ import {Invoice} from "@/models/invoice";
 import mongoose from "mongoose";
 import {NextApiRequest, NextApiResponse} from "next";
 
-const getNextSequenceValue = async (sequenceName: any) => {
-  const counter = await CounterModel.findOneAndUpdate(
-    {_id: sequenceName},
-    {$inc: {seq: 1}},
-    {new: true, upsert: true} // Create document if it doesn't exist
-  );
-  return counter.seq;
-};
+// const getNextSequenceValue = async (sequenceName: any) => {
+//   const counter = await CounterModel.findOneAndUpdate(
+//     {_id: sequenceName},
+//     {$inc: {seq: 1}},
+//     {new: true, upsert: true} // Create document if it doesn't exist
+//   );
+//   return counter.seq;
+// };
 
 export default async function handler(
   req: NextApiRequest,
@@ -117,11 +117,18 @@ async function handleBulkInsert(req: NextApiRequest, res: NextApiResponse) {
   }
 
   try {
-    for (const invoice of invoices) {
-      invoice._id = await getNextSequenceValue("Invoice._id");
+    const counter = await CounterModel.findOne({_id: "Invoice._id"});
+    const seqNo = counter.seq;
+    for (let index = 0; index < invoices.length; index++) {
+      invoices[index]._id = seqNo + 1 + index;
     }
     console.log("INVOICES:" + invoices.map((invoice) => invoice._id));
     await Invoice.insertMany(invoices);
+    await CounterModel.findOneAndUpdate(
+      {_id: "Invoice._id"},
+      {$inc: {seq: invoices.length}},
+      {new: true, upsert: true} // Create document if it doesn't exist
+    );
     res
       .status(201)
       .json({success: true, message: "Invoices created successfully"});

@@ -25,14 +25,14 @@ export default async function handler(
         // res.status(201).json({success: true, data: invoice});
         const counter = await CounterModel.findOneAndUpdate(
           {_id: "Invoice._id"},
-          {$seq: req.body.value},
+          {$set: {seq: req.body.value}},
           {new: true, upsert: true} // Create document if it doesn't exist
         );
-        return counter.seq;
+        res.status(201).json({success: true, data: counter});
       } catch (error: any) {
         console.error(error.message);
         if (error.name === "ValidationError") {
-          res.status(200).json({message: error.message});
+          res.status(400).json({message: error.message});
         } else {
           res.status(500).json({message: "Internal server error"});
         }

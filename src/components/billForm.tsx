@@ -70,8 +70,8 @@ export interface BForm {
 const initialValues: BForm = {
   pname: "",
   GSTN: "",
-  type: "",
   prods: [],
+  type: "Invoice",
   total: 0,
   Gtotal: 0,
   GtotalText: "Zero only",
@@ -112,12 +112,12 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
       .finally(() => {
         setLoading(false);
       });
-    if (!form.no) {
+    if (!form.invNo) {
       setLoading(true);
       axios
         .get("/api/invoice/counter")
         .then((response) => {
-          setForm({...form, no: response.data.data});
+          // setForm({...form, no: response.data.data});
           // console.log(response.data.data);
           form.no = response.data.data + 1;
           calculateAllFields();
@@ -586,7 +586,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
               <SelectItem value="Proforma">Proforma</SelectItem>
             </SelectContent>
           </Select> */}
-          <Input readOnly value={"Invoice"}></Input>
+          <Input readOnly value={form.type}></Input>
         </div>
         {/* INVOICE *************************************************************/}
         {

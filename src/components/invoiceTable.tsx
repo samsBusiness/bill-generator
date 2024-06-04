@@ -110,6 +110,13 @@ const InvoiceTable = () => {
       const response = await axios.delete("/api/invoice/" + params.data._id);
       console.log(response.status);
       if (response.status === 200) {
+        const counterres = await axios.get("/api/invoice/counter");
+        if (counterres.status == 200) {
+          const counter = counterres.data.data;
+          if (counter == params.data._id) {
+            await axios.post("/api/invoice/counter", {value: counter - 1});
+          }
+        }
         fetchInvoices();
       }
       // const createdVendor: Vendor = response.data;
@@ -131,31 +138,32 @@ const InvoiceTable = () => {
 
   const handleBulkSave = async (invoices: any[]) => {
     const form_nos = rowData.map((iv: InvoiceDocument) => iv.invNo);
+    const visibleColumns = columnDefs.filter((column) => !column.hide);
     const invoicesToBeAdded = invoices
       .map((iv) => {
         const invoice: any = {};
-        for (let i = 2; i < columnDefs.length; i++) {
+        for (let i = 2; i < visibleColumns.length; i++) {
           if (iv[i - 2] != null) {
             iv[i - 2] = iv[i - 2].trim();
             if (iv[i - 2].length == 0) iv[i - 2] = undefined;
           }
           if (
             !!iv[i - 2] &&
-            columnDefs[i].type != null &&
-            columnDefs[i].type == "date"
+            visibleColumns[i].type != null &&
+            visibleColumns[i].type == "date"
           ) {
-            invoice[columnDefs[i].field] = moment(
+            invoice[visibleColumns[i].field] = moment(
               iv[i - 2],
               "DD-MM-YYYY"
             ).toDate();
           } else if (
             !!iv[i - 2] &&
-            columnDefs[i].type != null &&
-            columnDefs[i].type == "number"
+            visibleColumns[i].type != null &&
+            visibleColumns[i].type == "number"
           ) {
-            invoice[columnDefs[i].field] = +iv[i - 2];
+            invoice[visibleColumns[i].field] = +iv[i - 2];
           } else {
-            invoice[columnDefs[i].field] = iv[i - 2];
+            invoice[visibleColumns[i].field] = iv[i - 2];
           }
         }
 
@@ -164,6 +172,7 @@ const InvoiceTable = () => {
       .filter((iv) => !!iv.invNo && !form_nos.includes(iv.invNo));
     invoicesToBeAdded.forEach((invoice) => {
       invoice["GtotalText"] = price_in_words(invoice["Gtotal"]) || undefined;
+      invoice["no"] = invoice.invNo.split("/")[1];
     });
     try {
       const response = await axios.post("/api/invoice", invoicesToBeAdded, {
