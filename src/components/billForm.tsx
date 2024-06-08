@@ -203,7 +203,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
     setLoading(true);
     const input = document.getElementById("billdoc");
     if (input == null) return;
-    html2canvas(input, {scale: 2})
+    html2canvas(input, {scale: 1})
       .then((canvas) => {
         const imgData = canvas.toDataURL("image/png");
         // console.log(imgData);

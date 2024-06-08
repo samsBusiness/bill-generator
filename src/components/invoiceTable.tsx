@@ -17,7 +17,7 @@ import Dateformat from "dateformat";
 // } from "@radix-ui/react-dropdown-menu";
 import {InvoiceDocument} from "@/models/invoice";
 import {VendorDocument} from "@/models/vendor";
-import {getFinYear, price_in_words, roundto2decimal} from "@/lib/utils";
+import {price_in_words, roundto2decimal} from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -246,11 +246,11 @@ const InvoiceTable = () => {
           CGST: vendor?.CGST ? 0 : undefined,
           IGST: vendor?.IGST ? 0 : undefined,
         };
-        const invNo: string = editForm.form.no
-          ? getFinYear(editForm.form.IDate) +
-            "/" +
-            String(editForm.form.no).padStart(3, "0")
-          : "";
+        // const invNo: string = editForm.form.invNo
+        //   ? getFinYear(editForm.form.IDate) +
+        //     "/" +
+        //     String(editForm.form.no).padStart(3, "0")
+        //   : "";
         const total: number = products.reduce((acc, prod) => acc + prod.amt, 0);
         const discamt: number = roundto2decimal(
           ((editForm.form.discount || 0) * total) / 100
@@ -279,7 +279,6 @@ const InvoiceTable = () => {
           SGST,
           IGST,
           Gtotal,
-          invNo,
           GtotalText: GtotalText ? GtotalText : "Zero only",
         };
         editForm.form = {...editForm.form, ...calculatedFields};
