@@ -25,8 +25,8 @@ import {
   roundto2decimal,
 } from "@/lib/utils";
 
-import html2canvas from "html2canvas";
-import {jsPDF} from "jspdf";
+// import html2canvas from "html2canvas";
+// import {jsPDF} from "jspdf";
 export interface Product {
   sr: number;
   part: string;
@@ -199,24 +199,50 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
     setForm({...form, ...calculatedFields});
   };
 
-  const saveDoc = () => {
-    setLoading(true);
-    const input = document.getElementById("billdoc");
-    if (input == null) return;
-    html2canvas(input, {scale: 1})
-      .then((canvas) => {
-        const imgData = canvas.toDataURL("image/png");
-        // console.log(imgData);
-        const pdf = new jsPDF("p", "mm", "a4");
-        const width = pdf.internal.pageSize.getWidth();
-        const height = pdf.internal.pageSize.getHeight();
-        pdf.addImage(imgData, "PNG", 0, 0, width, height);
-        // pdf.output('dataurlnewwindow');
-        pdf.save(
-          `${form.invNo} ${form.pname} ${Dateformat(form.IDate, "dd-mm-yyyy")}.pdf`
-        );
-      })
-      .finally(() => setLoading(false));
+  // const saveDoc = () => {
+  //   setLoading(true);
+  //   const input = document.getElementById("billdoc");
+  //   if (input == null) return;
+  //   html2canvas(input, {scale: 1})
+  //     .then((canvas) => {
+  //       const imgData = canvas.toDataURL("image/png");
+  //       // console.log(imgData);
+  //       const pdf = new jsPDF("p", "mm", "a4");
+  //       const width = pdf.internal.pageSize.getWidth();
+  //       const height = pdf.internal.pageSize.getHeight();
+  //       pdf.addImage(imgData, "PNG", 0, 0, width, height);
+  //       // pdf.output('dataurlnewwindow');
+  //       pdf.save(
+  //         `${form.invNo} ${form.pname} ${Dateformat(form.IDate, "dd-mm-yyyy")}.pdf`
+  //       );
+  //     })
+  //     .finally(() => setLoading(false));
+  // };
+  const generateAndDownloadPdf = async () => {
+    const data = form; // Your data here
+
+    try {
+      const response = await axios.post(
+        "/api/generate-pdf",
+        {data},
+        {responseType: "blob"}
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `${form.invNo} ${form.pname} ${Dateformat(form.IDate, "dd-mm-yyyy")}.pdf`
+      );
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url); // Clean up the object URL
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    }
   };
 
   const saveInvoice = async () => {
@@ -436,7 +462,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
   ) : preview ? (
     <>
       <div className="flex justify-end">
-        <Button className="bg-gray-400" onClick={saveDoc}>
+        <Button className="bg-gray-400" onClick={generateAndDownloadPdf}>
           Download PDF
         </Button>
         <Button className="mx-5 bg-green-700 text-white " onClick={saveInvoice}>

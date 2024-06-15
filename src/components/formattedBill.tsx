@@ -41,7 +41,7 @@ const FormattedBill: React.FC<props> = ({form}) => {
           <p className="text-[20px] leading-[0] font-bold pb-0">
             {form.invoiceTitle}
           </p>
-          <p className="text-[54px]  font-bold pb-8">S. KasamAli Bros.</p>
+          <p className="text-[54px]  font-bold">S. KasamAli Bros.</p>
           <p className="text-[14px] font-bold border-b-[1px] border-black pb-1">
             Specialist in : Taps & Dies. Dealers in : HSS & Carbide Drills, Hob
             Cutters, HSS Punches & General Hardware.
@@ -217,7 +217,7 @@ const FormattedBill: React.FC<props> = ({form}) => {
               </tr>
               <tr>
                 <th colSpan={2}>
-                  <div className="border-b-[1px] border-black w-fit mx-auto pb-1">
+                  <div className="border-b-[1px] border-black w-fit mx-auto">
                     GRAND TOTAL
                   </div>
                 </th>
@@ -237,7 +237,7 @@ const FormattedBill: React.FC<props> = ({form}) => {
                   <p>• Goods once sold will not be taken back.</p>
                 </td>
                 <td colSpan={4} className="text-center ">
-                  <p className="pb-4">For. S. KASAMALI BROS.</p>
+                  <p className="">For. S. KASAMALI BROS.</p>
                   <img
                     src="/alisign.jpeg"
                     className="w-3/4 h-20 mx-auto"
