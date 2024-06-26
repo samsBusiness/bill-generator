@@ -25,7 +25,6 @@
     "ag-grid-enterprise": "^31.1.1",
     "ag-grid-react": "^31.1.1",
     "axios": "^1.7.2",
-    "chrome-aws-lambda": "^10.1.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
