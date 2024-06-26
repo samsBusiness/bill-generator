@@ -43,7 +43,7 @@ export default async function handler(
     }
     const page = await browser?.newPage();
     const pdfData = JSON.stringify(data);
-    const url = `http://localhost:3000/billpdf?data=${encodeURIComponent(pdfData)}`;
+    const url = `/billpdf?data=${encodeURIComponent(pdfData)}`;
 
     await page?.goto(url, {waitUntil: "networkidle0"});
 
