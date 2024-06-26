@@ -44,7 +44,7 @@ export default async function handler(
     const page = await browser?.newPage();
     const pdfData = JSON.stringify(data);
     const url = `${process.env.NEXT_PUBLIC_BASE_URL}/billpdf?data=${encodeURIComponent(pdfData)}`;
-
+    console.log("Navigating to: " + url);
     await page?.goto(url, {waitUntil: "networkidle0"});
 
     const pdfBuffer = await page?.pdf({format: "A4"});
