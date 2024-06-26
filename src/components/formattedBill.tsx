@@ -239,8 +239,8 @@ const FormattedBill: React.FC<props> = ({form}) => {
                 <td colSpan={4} className="text-center ">
                   <p className="">For. S. KASAMALI BROS.</p>
                   <img
-                    src="/alisign.jpeg"
-                    className="w-3/4 h-20 mx-auto"
+                    src="/alisignfinal.png"
+                    className="w-3/5 h-20 mx-auto"
                     alt=""
                   />
                   <p>Proprieter</p>
