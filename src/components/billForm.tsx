@@ -28,6 +28,7 @@ import {
 // import html2canvas from "html2canvas";
 // import {jsPDF} from "jspdf";
 export interface Product {
+  id: string;
   sr: number;
   part: string;
   HSN: number;
@@ -78,6 +79,7 @@ const initialValues: BForm = {
 };
 
 const newProd = (srno: number) => ({
+  id: "prod_" + srno,
   sr: srno,
   part: "",
   HSN: 8207,
@@ -832,7 +834,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
                 onClick={
                   prods.length <= 1
                     ? undefined
-                    : () => setProds(prods.filter((prod) => prod.sr != idx + 1))
+                    : () => setProds(prods.filter((p) => p.id != prod.id))
                 }
               />
               {/* <Button
@@ -846,7 +848,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
               </Button> */}
             </div>
             <div
-              key={"prod-" + idx}
+              // key={"prod-" + idx}
               className="grid md:grid-cols-7 sm:grid-cols-3"
             >
               <div className="">

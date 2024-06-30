@@ -81,7 +81,7 @@
     /* border: 1px solid black; */
     border-right: 1px solid black;
     border-bottom: 1px solid black;
-    padding-bottom: 1em;
+    padding-bottom: 0.25em;
     border-collapse: collapse;
   }
 
@@ -94,7 +94,7 @@
   th,
   td {
     border-right: 1px solid black;
-    padding-bottom: 1em;
+    padding-bottom: 0.25em;
     border-collapse: collapse;
     height: 25px;
   }

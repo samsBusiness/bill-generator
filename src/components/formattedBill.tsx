@@ -113,7 +113,7 @@ const FormattedBill: React.FC<props> = ({form}) => {
                 </th>
               </tr>
               {products.map((product, idx) => (
-                <tr key={"tr" + idx}>
+                <tr key={"tr" + idx} className="h-8">
                   <td className="text-[10px] px-2 py-1">
                     {product.sr ? idx + 1 : ""}
                   </td>
