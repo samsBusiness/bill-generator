@@ -1,11 +1,16 @@
 import React, {useEffect, useRef, useState} from "react";
 import {AgGridReact} from "ag-grid-react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faBars, faPlus, faSave} from "@fortawesome/free-solid-svg-icons";
+import {
+  faBars,
+  faFileExcel,
+  faPlus,
+  faSave,
+} from "@fortawesome/free-solid-svg-icons";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import {ColDef, NewValueParams} from "ag-grid-community";
+import {ColDef, GridApi, NewValueParams} from "ag-grid-community";
 
 import axios from "axios";
 import {
@@ -137,6 +142,28 @@ const VendorTable: React.FC = () => {
       // setRowData([...rowData, createdVendor]);
     } catch (error) {
       console.error("Error Deleting vendor:", error);
+    }
+  };
+
+  const handleExport = () => {
+    const fileName = window.prompt(
+      "Enter the file name",
+      "exported_vendors.xlsx"
+    );
+    if (fileName) {
+      const gridApi: GridApi = gridRef.current.api;
+      // const totalSGST = rowData.reduce((acc, row) => acc + row.SGST, 0);
+      // const totalCGST = rowData.reduce((acc, row) => acc + row.CGST, 0);
+      // const totalIGST = rowData.reduce((acc, row) => acc + row.IGST, 0);
+      // const totalGtotal = rowData.reduce((acc, row) => acc + row.Gtotal, 0);
+
+      // const columns = gridApi.getAllGridColumns();
+      // const columnKeys = getFilteredColumns(columns);
+
+      gridApi.exportDataAsExcel({
+        fileName: fileName,
+        // columnKeys: columnKeys,
+      });
     }
   };
 
@@ -360,12 +387,20 @@ const VendorTable: React.FC = () => {
     <div style={{width: "100%", height: "100%"}}>
       <div className="flex justify-between">
         <h1 className="text-4xl text-center">Vendors</h1>
-        <button
-          className="px-4 py-2 text-gray-500 border-[1px] border-slate-200 hover:bg-slate-600 hover:text-white rounded-md mb-2"
-          onClick={addNewRow}
-        >
-          + Add Vendor
-        </button>
+        <div className="flex items-center">
+          <button
+            className="px-4 py-2 text-gray-500 border-[1px] border-slate-200 hover:bg-slate-600 hover:text-white rounded-md mb-2"
+            onClick={addNewRow}
+          >
+            + Add Vendor
+          </button>
+          <button
+            className="px-4 py-2 text-green-700 text-3xl hover:text-green-800 rounded-md mb-2"
+            onClick={handleExport}
+          >
+            <FontAwesomeIcon icon={faFileExcel} />
+          </button>
+        </div>
       </div>
       <hr className="w-full mb-8 " />
       {/* <button onClick={addNewRow} style={{marginBottom: "10px"}}>
