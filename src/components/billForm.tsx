@@ -877,7 +877,10 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
                   HSN
                 </label>
                 <Input
-                  onChange={(element) => (prod.HSN = +element.target.value)}
+                  onChange={(element) => {
+                    prod.HSN = +element.target.value;
+                    setProds([...prods]);
+                  }}
                   id={`hsn-${prod.sr}`}
                   value={prod.HSN}
                   placeholder="Enter HSN"
@@ -931,7 +934,10 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
                     value: option,
                   }))}
                   initValue={ProductunitTypes[0]}
-                  onChange={(value: any) => (prod.type = value)}
+                  onChange={(value: any) => {
+                    prod.type = value;
+                    setProds([...prods]);
+                  }}
                   placeholderText={"Select Unit"}
                   allowAdd
                 />
