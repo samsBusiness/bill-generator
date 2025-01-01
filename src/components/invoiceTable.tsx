@@ -7,7 +7,7 @@ import axios from "axios";
 import BillForm, {BForm} from "./billForm";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBars, faFileExcel} from "@fortawesome/free-solid-svg-icons";
-import Dateformat from "dateformat";
+import dayjs from "dayjs";
 
 // import {
 //   DropdownMenu,
@@ -386,7 +386,7 @@ const InvoiceTable = () => {
       type: "date",
 
       valueFormatter: (params: any) =>
-        params.value && Dateformat(new Date(params.value), "dd-mm-yyyy"),
+        params.value && dayjs(new Date(params.value)).format("DD-MM-YYYY"),
     },
     {headerName: "D", field: "d", type: "number"},
     {headerName: "M", field: "m", type: "number"},
@@ -397,7 +397,7 @@ const InvoiceTable = () => {
       field: "CDate",
       type: "date",
       valueFormatter: (params: any) =>
-        params.value && Dateformat(new Date(params.value), "dd-mm-yyyy"),
+        params.value && dayjs(new Date(params.value)).format("DD-MM-YYYY"),
     },
     {headerName: "PO Number", field: "PONo"},
     {
@@ -405,7 +405,7 @@ const InvoiceTable = () => {
       field: "Pdate",
       type: "date",
       valueFormatter: (params: any) =>
-        params.value && Dateformat(new Date(params.value), "dd-mm-yyyy"),
+        params.value && dayjs(new Date(params.value)).format("DD-MM-YYYY"),
     },
     {headerName: "Eway", field: "Eway"},
 

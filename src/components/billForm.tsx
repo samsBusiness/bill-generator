@@ -12,7 +12,7 @@ import {Calendar} from "@/components/ui/calendar";
 import {Button} from "@/components/ui/button";
 import axios, {AxiosError} from "axios";
 import {VendorDocument} from "@/models/vendor";
-import Dateformat from "dateformat";
+import dayjs from "dayjs";
 import FormattedBill from "./formattedBill";
 import {Combobox} from "./combobox";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -215,7 +215,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
   //       pdf.addImage(imgData, "PNG", 0, 0, width, height);
   //       // pdf.output('dataurlnewwindow');
   //       pdf.save(
-  //         `${form.invNo} ${form.pname} ${Dateformat(form.IDate, "dd-mm-yyyy")}.pdf`
+  //         `${form.invNo} ${form.pname} ${Dateformat(form.IDate, "DD-MM-YYYY")}.pdf`
   //       );
   //     })
   //     .finally(() => setLoading(false));
@@ -235,7 +235,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
       link.href = url;
       link.setAttribute(
         "download",
-        `${form.invNo} ${form.pname} ${Dateformat(form.IDate, "dd-mm-yyyy")}.pdf`
+        `${form.invNo} ${form.pname} ${dayjs(form.IDate).format("DD-MM-YYYY")}.pdf`
       );
       document.body.appendChild(link);
       link.click();
@@ -661,7 +661,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
                     readOnly
                     type="text"
                     value={
-                      form.IDate ? Dateformat(form.IDate, "dd-mm-yyyy") : ""
+                      form.IDate ? dayjs(form.IDate).format("DD-MM-YYYY") : ""
                     }
                   />
                 </PopoverTrigger>
@@ -736,7 +736,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
                     readOnly
                     type="text"
                     value={
-                      form.CDate ? Dateformat(form.CDate, "dd-mm-yyyy") : ""
+                      form.CDate ? dayjs(form.CDate).format("DD-MM-YYYY") : ""
                     }
                   />
                 </PopoverTrigger>
@@ -787,7 +787,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
                 placeholder="Select date"
                 readOnly
                 type="text"
-                value={form.Pdate ? Dateformat(form.Pdate, "dd-mm-yyyy") : ""}
+                value={form.Pdate ? dayjs(form.Pdate).format("DD-MM-YYYY") : ""}
               />
             </PopoverTrigger>
             <PopoverContent className="p-4">
@@ -933,7 +933,14 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
                     label: option,
                     value: option,
                   }))}
-                  initValue={ProductunitTypes[0]}
+                  initValue={
+                    prod.type
+                      ? ProductunitTypes.find(
+                          (type: string) =>
+                            type.toLowerCase() == prod.type.toLowerCase()
+                        )
+                      : ProductunitTypes[0]
+                  }
                   onChange={(value: any) => {
                     prod.type = value;
                     setProds([...prods]);

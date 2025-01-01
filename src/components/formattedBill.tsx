@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {BForm, Product} from "./billForm";
-import Dateformat from "dateformat";
+import dayjs from "dayjs";
 interface props {
   form: BForm;
 }
@@ -64,7 +64,9 @@ const FormattedBill: React.FC<props> = ({form}) => {
                 <th className="w-28">INV. NO.</th>
                 <th>{form.invNo}</th>
                 <th>Date</th>
-                <th>{form.IDate ? Dateformat(form.IDate, "dd-mm-yy") : ""}</th>
+                <th>
+                  {form.IDate ? dayjs(form.IDate).format("DD-MM-YYYY") : ""}
+                </th>
               </tr>
               <tr>
                 <th rowSpan={2} className="border-l-[1px] border-black">
@@ -78,13 +80,17 @@ const FormattedBill: React.FC<props> = ({form}) => {
                 <th className="px-2 text-[11px]">CHALAN NO</th>
                 <th>{form.ChNo}</th>
                 <th>Date</th>
-                <th>{form.CDate ? Dateformat(form.CDate, "dd-mm-yy") : ""}</th>
+                <th>
+                  {form.CDate ? dayjs(form.CDate).format("DD-MM-YYYY") : ""}
+                </th>
               </tr>
               <tr>
                 <th className="">P.O. NO.</th>
                 <th>{form.PONo}</th>
                 <th>Date</th>
-                <th>{form.Pdate ? Dateformat(form.Pdate, "dd-mm-yy") : ""}</th>
+                <th>
+                  {form.Pdate ? dayjs(form.Pdate).format("DD-MM-YYYY") : ""}
+                </th>
               </tr>
               <tr>
                 <th className="border-l-[1px] border-black">GSTN:</th>
