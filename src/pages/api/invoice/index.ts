@@ -55,10 +55,39 @@ export default async function handler(
 }
 
 async function handleSingleInsert(req: NextApiRequest, res: NextApiResponse) {
+  const session = await mongoose.startSession(); // Start a session
+  session.startTransaction(); // Start a transaction
+
   try {
-    const invoice = await Invoice.create(req.body);
+    // Increment the counter and get the new sequence value
+    const counter = await CounterModel.findByIdAndUpdate(
+      {_id: "Invoice._id"}, // Counter identifier
+      {$inc: {seq: 1}}, // Increment sequence
+      {new: true, upsert: true, session} // Ensure atomicity with session
+    );
+
+    if (!counter) {
+      throw new Error("Failed to increment counter");
+    }
+
+    // Assign the incremented ID to the invoice
+    const newInvoiceData = {...req.body, _id: counter.seq};
+
+    // Save the invoice
+    const invoice = await Invoice.create([newInvoiceData], {session});
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send success response
     res.status(201).json({success: true, data: invoice});
   } catch (error: any) {
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
+
+    // Error handling
     if (error instanceof mongoose.Error.ValidationError) {
       const missingFields = [];
       for (const [key, value] of Object.entries(error.errors)) {

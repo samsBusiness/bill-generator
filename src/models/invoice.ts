@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import {CounterModel} from "./counter";
 export interface InvoiceDocument extends Document {
   _id: object;
   // sr: number;
@@ -299,17 +298,17 @@ const invoiceSchema = new mongoose.Schema({
   GtotalText: {type: String, required: true, default: "Rupees Zero only"},
 });
 
-invoiceSchema.pre("save", async function (next) {
-  if (this.isNew) {
-    const counter = await CounterModel.findByIdAndUpdate(
-      {_id: "Invoice._id"},
-      {$inc: {seq: 1}},
-      {new: true, upsert: true}
-    );
-    this._id = counter.seq;
-  }
-  next();
-});
+// invoiceSchema.pre("save", async function (next) {
+//   if (this.isNew) {
+//     const counter = await CounterModel.findByIdAndUpdate(
+//       {_id: "Invoice._id"},
+//       {$inc: {seq: 1}},
+//       {new: true, upsert: true}
+//     );
+//     this._id = counter.seq;
+//   }
+//   next();
+// });
 
 export const Invoice =
   mongoose.models.Invoice || mongoose.model("Invoice", invoiceSchema);
