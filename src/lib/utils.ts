@@ -142,11 +142,11 @@ export const roundto2decimal = (num: number) =>
 
 export const getFinYear = (date: Date = new Date()) => {
   const currentDate = date;
-  const march1st = new Date();
-  march1st.setDate(1);
-  march1st.setMonth(2);
+  const april1st = new Date();
+  april1st.setDate(1);
+  april1st.setMonth(3);
   let currentYear;
-  if (currentDate >= march1st) {
+  if (currentDate >= april1st) {
     currentYear = currentDate.getFullYear();
   } else {
     currentYear = currentDate.getFullYear() - 1;
