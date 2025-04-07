@@ -105,8 +105,8 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
   const [form, setForm] = useState<BForm>({
     IDate: editForm?.form?.IDate || new Date(), // Set today as default for new invoices
     invoiceTitle: "Tax Invoice",
-    ...editForm?.form,
     ...initialValues,
+    ...editForm?.form,
   });
 
   // Get the global sequence number for form.no
