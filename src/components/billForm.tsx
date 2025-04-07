@@ -91,21 +91,64 @@ const newProd = (srno: number) => ({
 });
 
 const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
-  const [form, setForm] = useState<BForm>(editForm?.form || initialValues);
-  // const types = ["Invoice", "Challan"];
-  const [vendors, setVendors] = useState(editForm?.vendors || []);
-  const [vendor, setVendor] = useState<VendorDocument>(editForm?.vendor);
-  const [prods, setProds] = useState<Product[]>(editForm?.products || []);
+  const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState(false);
   const [IdatepopoverOpen, setIdatepopoverOpen] = useState(false);
   const [CdatepopoverOpen, setCdatepopoverOpen] = useState(false);
   const [PdatepopoverOpen, setPdatepopoverOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [vendor, setVendor] = useState<VendorDocument>(editForm?.vendor);
+  const [vendors, setVendors] = useState<VendorDocument[]>(
+    editForm?.vendors || []
+  );
+  const [prods, setProds] = useState<Product[]>(editForm?.products || []);
   const ProductunitTypes = ["Kgs", "Pcs", "Sets"];
+  const [form, setForm] = useState<BForm>({
+    IDate: editForm?.form?.IDate || new Date(), // Set today as default for new invoices
+    invoiceTitle: "Tax Invoice",
+    ...editForm?.form,
+    ...initialValues,
+  });
+
+  // Get the global sequence number for form.no
+  useEffect(() => {
+    if (!editForm) {
+      setLoading(true);
+      axios
+        .get("/api/invoice/counter")
+        .then((response) => {
+          setForm((prev) => ({
+            ...prev,
+            no: response.data.data + 1,
+          }));
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, []);
+
+  // Get FY-based invoice number whenever date changes for new invoices
+  useEffect(() => {
+    if (form.IDate && !editForm) {
+      // Only for new invoices
+      const fy = getFinYear(form.IDate);
+      fetch(`/api/fyCounter/next?fy=${fy}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setForm((prev) => ({
+            ...prev,
+            invNo: `${fy}/${String(data.nextNumber).padStart(3, "0")}`,
+          }));
+        })
+        .catch((error) => {
+          console.error("Error fetching next invoice number:", error);
+        });
+    }
+  }, [form.IDate, editForm]);
+
   useEffect(() => {
     setLoading(true);
     console.log("USEFFECT first");
-    form.invoiceTitle = "Tax Invoice";
     axios
       .get("/api/vendors")
       .then((response) => {
@@ -114,20 +157,6 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
       .finally(() => {
         setLoading(false);
       });
-    if (!form.invNo) {
-      setLoading(true);
-      axios
-        .get("/api/invoice/counter")
-        .then((response) => {
-          // setForm({...form, no: response.data.data});
-          // console.log(response.data.data);
-          form.no = response.data.data + 1;
-          calculateAllFields();
-        })
-        .finally(() => {
-          // setLoading(false);
-        });
-    }
   }, []);
 
   useEffect(() => {
@@ -165,9 +194,6 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
       prod.amtF = prod.amt == 0 ? "" : prod.amt.toString();
     });
     setProds([...prods]);
-    const invNo: string = form.no
-      ? getFinYear(form.IDate) + "/" + String(form.no).padStart(3, "0")
-      : "";
     const total: number = prods.reduce((acc, prod) => acc + prod.amt, 0);
     const discamt: number = roundto2decimal(
       ((form.discount || 0) * total) / 100
@@ -194,7 +220,6 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
       SGST,
       IGST,
       Gtotal,
-      invNo,
       GtotalText,
     };
     console.log("CALCULATED FIELDS", {...form, ...calculatedFields}, form);
@@ -669,10 +694,12 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
                   <Calendar
                     // defaultMonth={new Date()}
                     onDayClick={(day: Date) => {
-                      // setForm({...form, IDate: day});
-                      form.IDate = day;
+                      // Set the time to local midnight to ensure proper date storage
+                      const localMidnight = new Date(day);
+                      localMidnight.setHours(23, 59, 0, 0);
+                      form.IDate = localMidnight;
                       calculateAllFields();
-                      setIdatepopoverOpen(false); //
+                      setIdatepopoverOpen(false);
                     }}
                   />
                 </PopoverContent>

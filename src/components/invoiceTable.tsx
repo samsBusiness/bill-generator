@@ -107,9 +107,15 @@ const InvoiceTable = () => {
     );
     if (!userConfirmed) return;
     try {
+      // Get the financial year from the invoice number (e.g., "25-26/001" -> "25-26")
+      const fy = params.data.invNo.split("/")[0];
+
+      // Delete the invoice
       const response = await axios.delete("/api/invoice/" + params.data._id);
       console.log(response.status);
+
       if (response.status === 200) {
+        // Check and update global sequence counter if needed
         const counterres = await axios.get("/api/invoice/counter");
         if (counterres.status == 200) {
           const counter = counterres.data.data;
@@ -117,12 +123,25 @@ const InvoiceTable = () => {
             await axios.post("/api/invoice/counter", {value: counter - 1});
           }
         }
+
+        // Check and update FY counter if needed
+        const fyCounterRes = await axios.get(`/api/fyCounter/next?fy=${fy}`);
+        if (fyCounterRes.status === 200) {
+          const fyCounter = fyCounterRes.data;
+          // If this was the latest invoice for this FY (based on invoice number)
+          const invoiceNumber = parseInt(params.data.invNo.split("/")[1]);
+          if (fyCounter.nextNumber - 1 === invoiceNumber) {
+            // Decrement the FY counter
+            await axios.post(`/api/fyCounter/${fy}`, {
+              value: invoiceNumber - 1,
+            });
+          }
+        }
+
         fetchInvoices();
       }
-      // const createdVendor: Vendor = response.data;
-      // setRowData([...rowData, createdVendor]);
     } catch (error) {
-      console.error("Error Deleting vendor:", error);
+      console.error("Error deleting invoice:", error);
     }
   };
 

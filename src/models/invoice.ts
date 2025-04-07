@@ -159,7 +159,18 @@ const invoiceSchema = new mongoose.Schema({
   type: {type: String},
   no: {type: Number, required: true, unique: true},
   invNo: {type: String, required: true, unique: true},
-  IDate: {type: Date},
+  IDate: {
+    type: Date,
+    set: function (val: Date) {
+      // Ensure date is stored as IST midnight
+      if (val) {
+        const d = new Date(val);
+        d.setUTCHours(12, 0, 0, 0);
+        return new Date(d.getTime() + 5.5 * 60 * 60 * 1000); // Add 5:30 hours for IST
+      }
+      return val;
+    },
+  },
   d: {type: Number},
   m: {type: Number},
   y: {type: Number},

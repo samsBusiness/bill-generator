@@ -1,8 +1,10 @@
 import connectDb from "@/models/connectDb";
 import {CounterModel} from "@/models/counter";
+import {FYCounterModel} from "@/models/fyCounter";
 import {Invoice} from "@/models/invoice";
 import mongoose from "mongoose";
 import {NextApiRequest, NextApiResponse} from "next";
+import {getFinYear} from "@/lib/utils";
 
 // const getNextSequenceValue = async (sequenceName: any) => {
 //   const counter = await CounterModel.findOneAndUpdate(
@@ -59,7 +61,7 @@ async function handleSingleInsert(req: NextApiRequest, res: NextApiResponse) {
   session.startTransaction(); // Start a transaction
 
   try {
-    // Increment the counter and get the new sequence value
+    // Increment both counters
     const counter = await CounterModel.findByIdAndUpdate(
       {_id: "Invoice._id"}, // Counter identifier
       {$inc: {seq: 1}}, // Increment sequence
@@ -70,8 +72,31 @@ async function handleSingleInsert(req: NextApiRequest, res: NextApiResponse) {
       throw new Error("Failed to increment counter");
     }
 
-    // Assign the incremented ID to the invoice
-    const newInvoiceData = {...req.body, _id: counter.seq};
+    // Get current financial year
+    const fy = getFinYear(
+      req.body.IDate ? new Date(req.body.IDate) : new Date()
+    );
+
+    // Increment FY-specific counter
+    const fyCounter = await FYCounterModel.findByIdAndUpdate(
+      {_id: fy},
+      {$inc: {seq: 1}},
+      {new: true, upsert: true, session}
+    );
+
+    if (!fyCounter) {
+      throw new Error("Failed to increment FY counter");
+    }
+
+    // Create the invoice number in the format YY-YY/XXX
+    const invNo = `${fy}/${String(fyCounter.seq).padStart(3, "0")}`;
+
+    // Assign both IDs to the invoice
+    const newInvoiceData = {
+      ...req.body,
+      _id: counter.seq,
+      invNo: invNo,
+    };
 
     // Save the invoice
     const invoice = await Invoice.create([newInvoiceData], {session});
