@@ -251,7 +251,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
 
     try {
       const response = await axios.post(
-        "/api/generate-pdf",
+        "/api/generate-pdf-shift",
         {data},
         {responseType: "blob"}
       );
