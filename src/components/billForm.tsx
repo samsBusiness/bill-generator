@@ -93,6 +93,7 @@ const newProd = (srno: number) => ({
 const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [IdatepopoverOpen, setIdatepopoverOpen] = useState(false);
   const [CdatepopoverOpen, setCdatepopoverOpen] = useState(false);
   const [PdatepopoverOpen, setPdatepopoverOpen] = useState(false);
@@ -273,6 +274,8 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
   };
 
   const saveInvoice = async () => {
+    if (submitting) return;
+    setSubmitting(true);
     const parts: any = {
       1: {
         sr1: undefined,
@@ -459,9 +462,11 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
         if (result.status === 200) {
           alert("Invoice has been updated successfully");
           console.log("Updated invoice");
+          setSubmitting(false);
           callback();
         } else {
           alert(result.data.message);
+          setSubmitting(false);
         }
       } else {
         const result = await axios.post("/api/invoice", invoice);
@@ -469,6 +474,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
         if (result.status === 201) {
           console.log("Added invoice");
           alert("Invoice has been added successfully");
+          setSubmitting(false);
           callback();
         }
       }
@@ -478,6 +484,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
         console.log(error.response?.data.message);
       }
       // alert(error.message);
+      setSubmitting(false);
     }
   };
 
@@ -489,10 +496,18 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
   ) : preview ? (
     <>
       <div className="flex justify-end">
-        <Button className="bg-gray-400" onClick={generateAndDownloadPdf}>
+        <Button
+          className="bg-gray-400"
+          onClick={generateAndDownloadPdf}
+          disabled={submitting}
+        >
           Download PDF
         </Button>
-        <Button className="mx-5 bg-green-700 text-white " onClick={saveInvoice}>
+        <Button
+          className="mx-5 bg-green-700 text-white "
+          onClick={saveInvoice}
+          disabled={submitting}
+        >
           Accept
         </Button>
         <Button
@@ -514,6 +529,7 @@ const BillForm: React.FC<any> = ({editForm = undefined, callback = null}) => {
           onClick={handleSubmit}
           className="bg-gray-900 text-white hover:bg-gray-800 focus:ring-gray-950 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus:ring-gray-300"
           type="submit"
+          disabled={submitting}
         >
           Preview Bill
         </Button>

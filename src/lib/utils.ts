@@ -141,16 +141,18 @@ export const roundto2decimal = (num: number) =>
   Math.round((num + Number.EPSILON) * 100) / 100;
 
 export const getFinYear = (date: Date = new Date()) => {
-  const currentDate = date;
-  const april1st = new Date();
-  april1st.setDate(1);
-  april1st.setMonth(3);
-  let currentYear;
-  if (currentDate >= april1st) {
-    currentYear = currentDate.getFullYear();
-  } else {
-    currentYear = currentDate.getFullYear() - 1;
-  }
+  const currentDate = new Date(date);
+  // Anchor April 1st to the year of the provided date (not the system year)
+  const april1stOfYear = new Date(currentDate.getFullYear(), 3, 1);
+  // Normalize times to avoid timezone/time-of-day edge cases
+  april1stOfYear.setHours(0, 0, 0, 0);
+  currentDate.setHours(0, 0, 0, 0);
+
+  const currentYear =
+    currentDate >= april1stOfYear
+      ? currentDate.getFullYear()
+      : currentDate.getFullYear() - 1;
+
   return (
     currentYear.toString().substring(2) +
     "-" +
